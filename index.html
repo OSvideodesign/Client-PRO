@@ -300,6 +300,12 @@ textarea.finp{resize:vertical;min-height:80px}
     <div style="margin-bottom:12px"><label class="flbl">שם החברה</label><input class="finp" id="s-company" placeholder="וידאו דיזיין"></div>
     <div style="margin-bottom:12px"><label class="flbl">טלפון</label><input class="finp" id="s-phone" placeholder="050-0000000"></div>
     <div style="margin-bottom:20px"><label class="flbl">מייל שולח (לשליחת הודעות)</label><input class="finp" type="email" id="s-email" placeholder="info@videodesign.co.il"></div>
+    <div class="stit">WhatsApp → תקלות אוטומטי</div>
+    <div style="background:var(--sur2);border:1px solid var(--brd2);border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:var(--tx2)">
+      <div style="font-weight:700;margin-bottom:6px">🔗 Firebase URL ל-Make.com:</div>
+      <code style="font-size:11px;color:var(--acc);word-break:break-all">https://firestore.googleapis.com/v1/projects/vd-clientpro/databases/(default)/documents/faults</code>
+      <div style="margin-top:8px;color:var(--tx3)">שדות ב-Body של Make: desc={{message.text}} | updatedBy={{contact.name}} או {{contact.phone}}</div>
+    </div>
     <div class="stit">יומן Google</div>
     <div style="margin-bottom:6px"><label class="flbl">כתובת Gmail</label><input class="finp" type="email" id="s-gcal" placeholder="yourname@gmail.com"></div>
     <div style="font-size:11px;color:var(--tx3);margin-bottom:18px">לפתיחת אירועים ביומן Google</div>
@@ -627,10 +633,13 @@ function saveCust(){
   dbSaveCusts();closeM('M-cust');renderCusts();renderDash();
   toast(_eCust?'לקוח עודכן ✅':'לקוח נוסף ✅');
 }
-function delCust(){
+async function delCust(){
   if(!confirm('למחוק לקוח זה?'))return;
-  dbDel('customers',_eCust);window.custs=window.custs.filter(x=>x.id!==_eCust);
-  closeM('M-cust');renderCusts();renderDash();toast('נמחק');
+  const id=_eCust;
+  window.custs=window.custs.filter(x=>x.id!==id);
+  closeM('M-cust');renderCusts();renderDash();
+  const ok = await (window._dbDel ? window._dbDel('customers',id) : Promise.resolve(true));
+  toast(ok ? 'לקוח נמחק' : 'שגיאה במחיקה','err');
 }
 function viewCust(id){
   const c=window.custs.find(x=>x.id===id);if(!c)return;
@@ -658,8 +667,9 @@ function viewCust(id){
   }
   document.getElementById('Mv-del').onclick=()=>{
     if(!confirm('למחוק?'))return;
-    dbDel('customers',id);window.custs=window.custs.filter(x=>x.id!==id);
-    closeM('M-view');renderCusts();renderDash();toast('נמחק');
+    window.custs=window.custs.filter(x=>x.id!==id);
+    closeM('M-view');renderCusts();renderDash();
+    (window._dbDel?window._dbDel('customers',id):Promise.resolve()).then(()=>toast('לקוח נמחק'));
   };
   document.getElementById('Mv-edit').onclick=()=>{closeM('M-view');editCustId(id)};
   document.getElementById('Mv-fault').onclick=()=>{closeM('M-view');openNewFault(id)};
@@ -819,10 +829,13 @@ function saveFault(){
   dbSaveFaults();closeM('M-fault');renderFaults();renderDash();
   toast(_eFault?'תקלה עודכנה ✅':'תקלה נוספה ✅');
 }
-function delFault(){
+async function delFault(){
   if(!confirm('למחוק תקלה זו?'))return;
-  dbDel('faults',_eFault);window.faults=window.faults.filter(x=>x.id!==_eFault);
-  closeM('M-fault');renderFaults();renderDash();toast('תקלה נמחקה');
+  const id=_eFault;
+  window.faults=window.faults.filter(x=>x.id!==id);
+  closeM('M-fault');renderFaults();renderDash();
+  const ok = await (window._dbDel ? window._dbDel('faults',id) : Promise.resolve(true));
+  toast(ok ? 'תקלה נמחקה' : 'שגיאה במחיקה','err');
 }
 
 // === SETTINGS ===
@@ -1073,7 +1086,13 @@ window._dbSaveCfg=async(cfg)=>{
   localStorage.setItem('crm_cfg',JSON.stringify(cfg));
 };
 window._dbDel=async(col,id)=>{
-  try{await deleteDoc(doc(db,col,id));}catch(e){console.error(e);}
+  try{
+    await deleteDoc(doc(db,col,id));
+    return true;
+  }catch(e){
+    console.error('Delete failed:',e);
+    return false;
+  }
 };
 
 async function loadAll(){
