@@ -1,4 +1,4 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -365,7 +365,7 @@ select.finp{cursor:pointer}
       <option value="no">ללא חוב</option>
     </select>
   </div>
-  <div class="tw"><table>
+  <div class="tw"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table>
     <thead><tr><th>לקוח</th><th>טלפון</th><th>מייל</th><th>כתובת</th><th>אחריות</th><th>חוב</th><th>פעולות</th></tr></thead>
     <tbody id="cust-body"></tbody>
   </table></div>
@@ -374,7 +374,7 @@ select.finp{cursor:pointer}
 <!-- WARRANTIES -->
 <div class="pg" id="pg-warranties">
   <div class="ph"><div><div class="pt">מעקב אחריות</div><div class="ps">ניהול תפוגת אחריות</div></div></div>
-  <div class="tw"><table>
+  <div class="tw"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table>
     <thead><tr><th>לקוח</th><th>התקנה</th><th>תפוגה</th><th>זמן שנותר</th><th>סטטוס</th></tr></thead>
     <tbody id="warr-body"></tbody>
   </table></div>
@@ -383,7 +383,7 @@ select.finp{cursor:pointer}
 <!-- DEBTS -->
 <div class="pg" id="pg-debts">
   <div class="ph"><div><div class="pt">ניהול חובות</div><div class="ps">מעקב חובות ותשלומים</div></div></div>
-  <div class="tw"><table>
+  <div class="tw"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table>
     <thead><tr><th>לקוח</th><th>טלפון</th><th>סכום</th><th>תיאור</th><th>סטטוס</th><th>פעולות</th></tr></thead>
     <tbody id="debts-body"></tbody>
   </table></div>
@@ -576,7 +576,7 @@ function nav(page) {
 
 // ============ DASHBOARD ============
 function renderDash() {
-  if (!document.getElementById('dash-warnings')) return; // DOM not ready yet
+  if (!document.getElementById('st-total')) return; // DOM not ready yet
   const endYear = new Date(new Date().getFullYear(), 11, 31);
   let warnCount=0, debtCount=0, debtSum=0;
   custs.forEach(c => {
@@ -975,7 +975,7 @@ let gcalWeekOffset = 0;
 function gcalInit() {
   if (!document.getElementById('gcal-auth-area')) return;
   // Try silent token restore from sessionStorage
-  const saved = sessionStorage.getItem('gcal_token');
+  const saved = localStorage.getItem('gcal_token');
   if (saved) {
     gcalToken = JSON.parse(saved);
     showWeekGrid();
@@ -992,7 +992,7 @@ function gcalSignIn() {
     callback: (resp) => {
       if (resp.error) { console.error(resp); return; }
       gcalToken = resp;
-      sessionStorage.setItem('gcal_token', JSON.stringify(resp));
+      localStorage.setItem('gcal_token', JSON.stringify(resp));
       document.getElementById('gcal-auth-area').style.display = 'none';
       showWeekGrid();
       fetchWeekEvents();
@@ -1004,7 +1004,7 @@ function gcalSignIn() {
 function gcalSignOut() {
   google.accounts.oauth2.revoke(gcalToken.access_token, () => {});
   gcalToken = null;
-  sessionStorage.removeItem('gcal_token');
+  localStorage.removeItem('gcal_token');
   document.getElementById('gcal-week-grid').style.display = 'none';
   document.getElementById('gcal-signout-area').style.display = 'none';
   document.getElementById('gcal-auth-area').style.display = 'block';
@@ -1115,6 +1115,18 @@ window.renderFaults = renderFaults;
 window.toast = toast;
 window.gcalInit = gcalInit;
 window.SEED_CUSTS = SEED_CUSTS;
+// saveCfg fallback - if Firebase module not ready, save to localStorage
+function saveCfg() {
+  if (window._fbSetDoc && window._db) {
+    window._fbSetDoc(window._fbDoc(window._db,'settings','main'), cfg).catch(()=>{});
+  }
+  localStorage.setItem('crm_cfg_backup', JSON.stringify(cfg));
+}
+// Also load cfg from localStorage backup if Firebase hasn't loaded it
+(function() {
+  const backup = localStorage.getItem('crm_cfg_backup');
+  if (backup) try { const b = JSON.parse(backup); Object.assign(cfg, b); } catch(e) {}
+})();
 </script>
 
 <script type="module">
