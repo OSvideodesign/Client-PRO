@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="וידאו דיזיין">
+<meta name="theme-color" content="#0a0e1a">
+<title>לקוחות וידאו דיזיין</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Heebo',sans-serif;background:#0a0e1a;color:#f1f5f9;min-height:100vh;direction:rtl}
+:root{
+  --bg:#0a0e1a;--sur:#111827;--sur2:#1a2235;--sur3:#1f2d45;
+  --acc:#3b82f6;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--ora:#fb923c;--cya:#06b6d4;
+  --tx:#f1f5f9;--tx2:#94a3b8;--tx3:#64748b;--brd:#1e293b;--brd2:#2d3f5e;--r:12px;
+}
+/* LAYOUT */
+.sidebar{position:fixed;top:0;right:0;width:220px;height:100vh;background:var(--sur);border-left:1px solid var(--brd);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.logo{padding:20px 16px 14px;border-bottom:1px solid var(--brd)}
+.logo h1{font-size:17px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--cya));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo p{font-size:11px;color:var(--tx3);margin-top:2px}
+.nav{flex:1;padding:10px}
+.nav-sec{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;padding:12px 8px 4px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--tx2);background:none;border:none;width:100%;text-align:right;font-family:'Heebo',sans-serif;margin-bottom:2px;transition:all .15s}
+.nav-btn:hover{background:var(--sur2);color:var(--tx)}
+.nav-btn.on{background:rgba(59,130,246,.15);color:var(--acc)}
+.main{margin-right:220px;padding:24px;min-height:100vh}
+/* PAGES */
+.pg{display:none}.pg.on{display:block}
+/* HEADER */
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.pt{font-size:22px;font-weight:800}
+.ps{font-size:12px;color:var(--tx3);margin-top:2px}
+/* CARDS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:16px;text-align:center}
+.sc.info{border-color:rgba(59,130,246,.3)}.sc.warn{border-color:rgba(245,158,11,.3)}
+.sc.danger{border-color:rgba(239,68,68,.3)}.sc.success{border-color:rgba(16,185,129,.3)}.sc.orange{border-color:rgba(251,146,60,.3)}
+.sc-lbl{font-size:11px;color:var(--tx3);margin-bottom:6px}
+.sc-val{font-size:28px;font-weight:800}
+.sc-sub{font-size:10px;color:var(--tx3);margin-top:4px}
+/* PANELS */
+.dash3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.panel-title{padding:12px 16px;border-bottom:1px solid var(--brd);font-weight:700;font-size:13px}
+.ai{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--brd);cursor:pointer}
+.ai:hover{background:var(--sur2)}.ai:last-child{border-bottom:none}
+.ai.warn{border-right:3px solid var(--yel)}.ai.danger{border-right:3px solid var(--red)}
+/* TABLE */
+.tw{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th{padding:10px 12px;text-align:right;font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;border-bottom:1px solid var(--brd);background:var(--sur2);white-space:nowrap}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--brd);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr:last-child td{border-bottom:none}
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.sw{position:relative;flex:1;min-width:180px}
+.sw input{width:100%;background:var(--sur);border:1px solid var(--brd2);border-radius:8px;padding:8px 34px 8px 10px;color:var(--tx);font-size:13px;font-family:'Heebo',sans-serif;outline:none}
+.sw input:focus{border-color:var(--acc)}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.fsel{background:var(--sur);border:1px solid var(--brd2);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:13px;font-family:'Heebo',sans-serif;outline:none;cursor:pointer}
+/* AVATAR */
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.ci{display:flex;align-items:center;gap:8px}
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.bg{background:rgba(16,185,129,.15);color:var(--grn)}
+.br{background:rgba(239,68,68,.15);color:var(--red)}
+.by{background:rgba(245,158,11,.15);color:var(--yel)}
+.bb{background:rgba(59,130,246,.15);color:var(--acc)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Heebo',sans-serif;transition:all .15s;white-space:nowrap}
+.bp{background:var(--acc);color:#fff}.bp:hover{background:#2563eb}
+.bs{background:var(--sur2);color:var(--tx);border:1px solid var(--brd2)}.bs:hover{background:var(--sur3)}
+.bd{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:5px 10px;font-size:11px}
+/* PROGRESS */
+.pb{height:5px;background:var(--sur3);border-radius:3px;overflow:hidden;margin-top:4px}
+.pb-fill{height:100%;border-radius:3px}
+/* FAULT CARDS */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.fc{background:var(--sur2);border:1px solid var(--brd2);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s}
+.fc:hover{border-color:var(--acc)}
+.fch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
+.fdesc{font-size:13px;color:var(--tx2);margin-bottom:8px;line-height:1.5}
+.fmeta{display:flex;gap:10px;flex-wrap:wrap}
+.fmeta span{font-size:11px;color:var(--tx3)}
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.mbox{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+.mhd{padding:16px 20px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--sur);z-index:1}
+.mhd h2{font-size:16px;font-weight:700}
+.mbody{padding:20px}
+.mft{padding:14px 20px;border-top:1px solid var(--brd);display:flex;gap:8px;justify-content:flex-end}
+/* FORM */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg1{grid-column:1/-1}
+.flbl{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:4px}
+.finp{background:var(--sur2);border:1px solid var(--brd2);border-radius:8px;padding:9px 12px;color:var(--tx);font-size:14px;font-family:'Heebo',sans-serif;outline:none;width:100%}
+.finp:focus{border-color:var(--acc)}
+textarea.finp{resize:vertical;min-height:80px}
+.stit{font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--brd)}
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#f1f5f9;padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;border:1px solid var(--brd2)}
+#toast.show{opacity:1}
+/* MOBILE NAV */
+#mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sur);border-top:1px solid var(--brd);z-index:200;height:60px;padding-bottom:env(safe-area-inset-bottom)}
+#mnav .mns{display:flex;height:100%;align-items:stretch}
+.mnb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--tx2);font-family:'Heebo',sans-serif;font-size:10px;cursor:pointer;padding:4px;transition:color .15s}
+.mnb.on{color:var(--acc)}
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-right:0;padding:12px 12px 76px}
+  #mnav{display:block}
+  .stats{grid-template-columns:1fr 1fr;gap:8px}
+  .sc{padding:12px}.sc-val{font-size:22px}
+  .dash3{grid-template-columns:1fr}
+  .modal{align-items:flex-end;padding:0}
+  .mbox{max-width:100%;max-height:93vh;border-radius:18px 18px 0 0}
+  .fgrid{grid-template-columns:1fr}
+  .finp{font-size:16px}
+  .fg{grid-template-columns:1fr}
+  .ph{flex-direction:column;align-items:flex-start}.pt{font-size:18px}
+}
+@media(min-width:769px){#mnav{display:none!important}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.panel-scroll{max-height:260px;overflow-y:auto;}
+.panel-scroll::-webkit-scrollbar{width:4px}
+.panel-scroll::-webkit-scrollbar-track{background:transparent}
+.panel-scroll::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- MOBILE NAV -->
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="position:fixed;inset:0;background:#0a0e1a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:32px;width:100%;max-width:360px;text-align:center">
+    <div style="font-size:32px;margin-bottom:8px">📹</div>
+    <h1 style="font-size:20px;font-weight:800;background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px">וידאו דיזיין</h1>
+    <p style="font-size:12px;color:#64748b;margin-bottom:24px">ניהול לקוחות</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px" id="user-btns">
+    </div>
+    <div id="login-pass-area" style="display:none">
+      <p id="login-greeting" style="font-size:13px;color:#94a3b8;margin-bottom:10px"></p>
+      <input type="password" id="login-pass" class="finp" placeholder="סיסמה" style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:10px" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn bp" style="width:100%" onclick="doLogin()">כניסה →</button>
+      <button class="btn bs btn-sm" style="width:100%;margin-top:8px" onclick="resetLoginUI()">חזור</button>
+      <p id="login-err" style="color:#ef4444;font-size:12px;margin-top:8px;display:none">סיסמה שגויה</p>
+    </div>
+  </div>
+</div>
+<div id="mnav"><div class="mns">
+  <button class="mnb" onclick="nav('dashboard')"><span style="font-size:20px">🏠</span>ראשי</button>
+  <button class="mnb" onclick="nav('customers')"><span style="font-size:20px">👥</span>לקוחות</button>
+  <button class="mnb" onclick="nav('faults')"><span style="font-size:20px">🔧</span>תקלות</button>
+  <button class="mnb" onclick="nav('warranties')"><span style="font-size:20px">🛡️</span>אחריות</button>
+  <button class="mnb" onclick="nav('settings')"><span style="font-size:20px">⚙️</span>הגדרות</button>
+</div></div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>וידאו דיזיין</h1><p>ניהול לקוחות</p>
+    <div id="user-badge" style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700"></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-sec">ניהול</div>
+    <button class="nav-btn on" id="nb-dashboard" onclick="nav('dashboard')">📊 לוח בקרה</button>
+    <button class="nav-btn" id="nb-customers" onclick="nav('customers')">👥 לקוחות</button>
+    <button class="nav-btn" id="nb-faults" onclick="nav('faults')">🔧 תקלות</button>
+    <div class="nav-sec">דוחות</div>
+    <button class="nav-btn" id="nb-warranties" onclick="nav('warranties')">🛡️ אחריות</button>
+    <button class="nav-btn" id="nb-debts" onclick="nav('debts')">💰 חובות</button>
+    <div class="nav-sec">מערכת</div>
+    <button class="nav-btn" id="nb-settings" onclick="nav('settings')">⚙️ הגדרות</button>
+    <div class="nav-sec" style="margin-top:auto"></div>
+    <button class="nav-btn" onclick="logout()" style="color:var(--red)">🚪 התנתק</button>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dashboard">
+  <div class="ph">
+    <div><div class="pt">לוח בקרה</div><div class="ps">סקירה כללית</div></div>
+    <button class="btn bp" onclick="openNewCust()">+ לקוח חדש</button>
+  </div>
+  <div class="stats">
+    <div class="sc info"><div class="sc-lbl">סה״כ לקוחות</div><div class="sc-val" id="st-total">—</div><div class="sc-sub">במערכת</div></div>
+    <div class="sc warn"><div class="sc-lbl">אחריות פגה/בקרוב</div><div class="sc-val" id="st-warr">—</div><div class="sc-sub">⚠️ דורש טיפול</div></div>
+    <div class="sc danger"><div class="sc-lbl">לקוחות עם חוב</div><div class="sc-val" id="st-debts">—</div><div class="sc-sub">חובות פתוחים</div></div>
+    <div class="sc success"><div class="sc-lbl">סה״כ חוב</div><div class="sc-val" id="st-debt-sum">—</div><div class="sc-sub">₪ לגבייה</div></div>
+    <div class="sc orange"><div class="sc-lbl">תקלות פתוחות</div><div class="sc-val" id="st-faults">—</div><div class="sc-sub">🔧 ממתינות</div></div>
+  </div>
+  <div class="dash3">
+    <div class="tw"><div class="panel-title">⚠️ אחריות בפתח</div><div id="pan-warr" class="panel-scroll"><div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">טוען...</div></div></div>
+    <div class="tw"><div class="panel-title">💰 חובות פתוחים</div><div id="pan-debts" class="panel-scroll"><div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">טוען...</div></div></div>
+    <div class="tw"><div class="panel-title">🔧 תקלות אחרונות</div><div id="pan-faults" class="panel-scroll"><div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">טוען...</div></div></div>
+  </div>
+  <!-- GCAL -->
+  <div class="tw" style="margin-top:16px">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-weight:700;font-size:14px">📅 יומן שבועי — Google Calendar</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button class="btn bs btn-sm" onclick="wkPrev()">&#8249; קודם</button>
+        <button class="btn bs btn-sm" onclick="wkToday()">היום</button>
+        <button class="btn bs btn-sm" onclick="wkNext()">הבא &#8250;</button>
+        <span id="wk-label" style="font-size:12px;color:var(--tx3)"></span>
+      </div>
+    </div>
+    <div id="gcal-signin" style="padding:30px;text-align:center">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:14px">התחבר עם Google כדי לראות את היומן</div>
+      <button onclick="gcalSignIn()" style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:Heebo,sans-serif">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.5 1.2 8.9 3.2l6.6-6.6C35.4 2.4 30.1 0 24 0 14.8 0 6.9 5.4 3 13.3l7.7 6C12.5 13.2 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7c4.3-4 6.8-9.9 6.8-16.9z"/><path fill="#FBBC05" d="M10.7 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.6 13.3A23.9 23.9 0 0 0 0 24c0 3.8.9 7.4 2.6 10.6l8.1-5.9z"/><path fill="#34A853" d="M24 48c6.1 0 11.3-2 15.1-5.4l-7.4-5.7c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-4.2-13.3-9.8l-7.7 6C6.9 42.6 14.8 48 24 48z"/></svg>
+        כניסה עם Google
+      </button>
+    </div>
+    <div id="gcal-grid" style="padding:12px;display:none"></div>
+    <div id="gcal-out" style="padding:8px 16px;border-top:1px solid var(--brd);display:none;justify-content:flex-end">
+      <button onclick="gcalSignOut()" style="font-size:11px;color:var(--tx3);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">התנתק מ-Google</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="pg" id="pg-customers">
+  <div class="ph">
+    <div><div class="pt">לקוחות</div><div class="ps" id="cnt-custs"></div></div>
+    <button class="btn bp" onclick="openNewCust()">+ לקוח חדש</button>
+  </div>
+  <div class="toolbar">
+    <div class="sw"><input type="text" id="q-custs" placeholder="חפש שם, טלפון, עיר..." oninput="renderCusts()"><span class="si">🔍</span></div>
+    <select class="fsel" id="f-warr" onchange="renderCusts()">
+      <option value="">כל האחריות</option><option value="expired">פגה</option>
+      <option value="soon">פגה בקרוב</option><option value="valid">בתוקף</option>
+    </select>
+    <select class="fsel" id="f-debt" onchange="renderCusts()">
+      <option value="">כל החובות</option><option value="has">יש חוב</option><option value="no">ללא חוב</option>
+    </select>
+  </div>
+  <div class="tw"><div class="tscroll"><table>
+    <thead><tr><th>לקוח</th><th>טלפון</th><th>עיר</th><th>אחריות</th><th>חוב</th><th>פעולות</th></tr></thead>
+    <tbody id="tb-custs"></tbody>
+  </table></div></div>
+</div>
+
+<!-- WARRANTIES -->
+<div class="pg" id="pg-warranties">
+  <div class="ph"><div><div class="pt">אחריות</div><div class="ps" id="cnt-warr"></div></div></div>
+  <div class="tw"><div class="tscroll"><table>
+    <thead><tr><th>לקוח</th><th>התקנה</th><th>שנות אחריות</th><th>תפוגה</th><th>סטטוס</th><th>התקדמות</th></tr></thead>
+    <tbody id="tb-warr"></tbody>
+  </table></div></div>
+</div>
+
+<!-- DEBTS -->
+<div class="pg" id="pg-debts">
+  <div class="ph"><div><div class="pt">חובות</div><div class="ps" id="cnt-debts"></div></div></div>
+  <div class="tw"><div class="tscroll"><table>
+    <thead><tr><th>לקוח</th><th>טלפון</th><th>סכום חוב</th><th>הערות</th><th>פעולות</th></tr></thead>
+    <tbody id="tb-debts"></tbody>
+  </table></div></div>
+</div>
+
+<!-- FAULTS -->
+<div class="pg" id="pg-faults">
+  <div class="ph">
+    <div><div class="pt">תקלות</div><div class="ps" id="cnt-faults"></div></div>
+    <button class="btn bp" onclick="openNewFault(null)">+ תקלה חדשה</button>
+  </div>
+  <div class="toolbar">
+    <div class="sw"><input type="text" id="q-faults" placeholder="חפש..." oninput="renderFaults()"><span class="si">🔍</span></div>
+    <select class="fsel" id="f-fstatus" onchange="renderFaults()">
+      <option value="">כל הסטטוסים</option><option value="open">פתוחה</option>
+      <option value="scheduled">נקבע תאריך</option><option value="done">טופלה</option>
+    </select>
+  </div>
+  <div id="list-faults"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="pg" id="pg-settings">
+  <div class="ph"><div class="pt">הגדרות</div></div>
+  <div class="tw" style="max-width:460px;padding:22px">
+    <div class="stit">פרטי החברה</div>
+    <div style="margin-bottom:12px"><label class="flbl">שם החברה</label><input class="finp" id="s-company" placeholder="וידאו דיזיין"></div>
+    <div style="margin-bottom:12px"><label class="flbl">טלפון</label><input class="finp" id="s-phone" placeholder="050-0000000"></div>
+    <div style="margin-bottom:20px"><label class="flbl">מייל שולח (לשליחת הודעות)</label><input class="finp" type="email" id="s-email" placeholder="info@videodesign.co.il"></div>
+    <div class="stit">WhatsApp → תקלות אוטומטי</div>
+    <div style="background:var(--sur2);border:1px solid var(--brd2);border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:var(--tx2)">
+      <div style="font-weight:700;margin-bottom:6px">🔗 Firebase URL ל-Make.com:</div>
+      <code style="font-size:11px;color:var(--acc);word-break:break-all">https://firestore.googleapis.com/v1/projects/vd-clientpro/databases/(default)/documents/faults</code>
+      <div style="margin-top:8px;color:var(--tx3)">שדות ב-Body של Make: desc={{message.text}} | updatedBy={{contact.name}} או {{contact.phone}}</div>
+    </div>
+    <div class="stit">יומן Google</div>
+    <div style="margin-bottom:6px"><label class="flbl">כתובת Gmail</label><input class="finp" type="email" id="s-gcal" placeholder="yourname@gmail.com"></div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:18px">לפתיחת אירועים ביומן Google</div>
+    <button class="btn bp" onclick="saveSettings()">💾 שמור הגדרות</button>
+  </div>
+</div>
+
+</main>
+
+<!-- MODAL: CUSTOMER EDIT -->
+<div class="modal" id="M-cust">
+  <div class="mbox">
+    <div class="mhd"><h2 id="M-cust-title">לקוח חדש</h2><button class="btn bs btn-sm" onclick="closeM('M-cust')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div><label class="flbl">שם מלא *</label><input class="finp" id="mc-name"></div>
+        <div><label class="flbl">טלפון</label><input class="finp" id="mc-phone" type="tel"></div>
+        <div><label class="flbl">מייל</label><input class="finp" id="mc-email" type="email"></div>
+        <div><label class="flbl">עיר</label><input class="finp" id="mc-city"></div>
+        <div class="fg1"><label class="flbl">כתובת</label><input class="finp" id="mc-address"></div>
+        <div><label class="flbl">תאריך התקנה</label><input class="finp" id="mc-install" type="date"></div>
+        <div><label class="flbl">שנות אחריות</label><input class="finp" id="mc-warr" type="number" value="2" min="0" max="20"></div>
+        <div><label class="flbl">סוג פרויקט</label><input class="finp" id="mc-project" placeholder="מצלמות / אינטרקום..."></div>
+        <div><label class="flbl">ציוד</label><input class="finp" id="mc-equip"></div>
+        <div><label class="flbl">חוב (₪)</label><input class="finp" id="mc-debt" type="number" value="0"></div>
+        <div class="fg1"><label class="flbl">הערות חוב</label><input class="finp" id="mc-debt-desc"></div>
+        <div class="fg1"><label class="flbl">הערות טכנאי</label><textarea class="finp" id="mc-notes" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn bd btn-sm" id="mc-del" style="display:none;margin-left:auto" onclick="delCust()">🗑️ מחק</button>
+      <button class="btn bs" onclick="closeM('M-cust')">ביטול</button>
+      <button class="btn bp" onclick="saveCust()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CUSTOMER VIEW -->
+<div class="modal" id="M-view">
+  <div class="mbox">
+    <div class="mhd"><h2 id="Mv-name">פרטי לקוח</h2><button class="btn bs btn-sm" onclick="closeM('M-view')">✕</button></div>
+    <div class="mbody" id="Mv-body"></div>
+    <div class="mft">
+      <button class="btn bd btn-sm" id="Mv-del" style="margin-left:auto">🗑️ מחק</button>
+      <button class="btn bs btn-sm" id="Mv-mail" style="display:none">📧 מייל אחריות</button>
+      <button class="btn bs btn-sm" id="Mv-edit">✏️ ערוך</button>
+      <button class="btn bp btn-sm" id="Mv-fault">🔧 תקלה חדשה</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FAULT EDIT -->
+<div class="modal" id="M-fault">
+  <div class="mbox">
+    <div class="mhd"><h2 id="M-fault-title">תקלה חדשה</h2><button class="btn bs btn-sm" onclick="closeM('M-fault')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="fg1"><label class="flbl">לקוח *</label><select class="finp" id="mf-cust"></select></div>
+        <div class="fg1"><label class="flbl">סוג קריאה *</label>
+          <select class="finp" id="mf-type">
+            <option value="fault">🔧 תקלה</option>
+            <option value="service">🛠️ שירות</option>
+            <option value="installation">📦 המשך התקנה</option>
+            <option value="other">📋 אחר</option>
+          </select>
+        </div>
+        <div class="fg1"><label class="flbl">תיאור *</label><textarea class="finp" id="mf-desc" rows="3"></textarea></div>
+        <div><label class="flbl">דחיפות</label>
+          <select class="finp" id="mf-pri">
+            <option value="low">🟢 נמוכה</option><option value="medium" selected>🟡 בינונית</option>
+            <option value="high">🔴 גבוהה</option><option value="urgent">🚨 דחוף!</option>
+          </select>
+        </div>
+        <div><label class="flbl">סטטוס</label>
+          <select class="finp" id="mf-status">
+            <option value="open">פתוחה</option><option value="scheduled">נקבע תאריך</option><option value="done">טופלה</option>
+          </select>
+        </div>
+        <div><label class="flbl">תאריך הגעה</label><input class="finp" id="mf-date" type="date"></div>
+        <div><label class="flbl">שעה</label><input class="finp" id="mf-time" type="time"></div>
+        <div class="fg1"><label class="flbl">הערות</label><textarea class="finp" id="mf-notes" rows="2"></textarea></div>
+        <div><label class="flbl">💰 סכום שירות (₪) — לא חובה</label><input class="finp" id="mf-amount" type="number" min="0" placeholder="0"></div>
+        <div><label class="flbl">שולם?</label>
+          <select class="finp" id="mf-paid">
+            <option value="no">לא שולם</option>
+            <option value="yes">שולם ✅</option>
+            <option value="partial">שולם חלקית</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn bd btn-sm" id="mf-del" style="display:none;margin-left:auto" onclick="delFault()">🗑️ מחק</button>
+      <button class="btn bs" onclick="closeM('M-fault')">ביטול</button>
+      <button class="btn bp" onclick="saveFault()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// === STATE ===
+const SEED_CUSTS = [{"id": "g14jb2jar5", "name": "מוחנד כינען 52", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "zw6ej9l1uo", "name": "I Feel You", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "8tgfb5q82t", "name": "עופר גלזר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "plnq7s1qs5", "name": "תומר שלם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "rdn1o2a4ty", "name": "עודד נאיר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "yh4blmq7br", "name": "טל נאומן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "f9kjo1x7j9", "name": "שי ירון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "qm11d107fm", "name": "אירן מואס חיפה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "f4pa17kgej", "name": "אלוני לוי תל אביב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "puf6baskro", "name": "מיקי ביטון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "iuc9bhzsbw", "name": "עודי דהן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "rx543a2ogj", "name": "אייל שוחט", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2kj9p7a131", "name": "שי קמאו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "65qd6mtdlh", "name": "חאתם דבאח", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "owe5g99bm0", "name": "גיל ניצן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "qs9ru8epmd", "name": "נתי לוינסון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "cfpcca7i47", "name": "עדי רון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "x6rzd4upmg", "name": "מור דן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "4ph00r5ppz", "name": "ארנה שוורץ", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "yezaoasu1j", "name": "אהוד שפירא", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2504rw7nyp", "name": "מישל דיין", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "djdp2hk9up", "name": "רפאל שופס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "fygo0n2mfy", "name": "באולינג צ'קבול", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "nvexxisp3s", "name": "עודד פלר הרצליה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "4giqv6teq1", "name": "יואד שוורץ", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "nz5j3710g2", "name": "משה דהן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "bn85fsu0gm", "name": "יעל רונן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "rkz0t7cpjy", "name": "שלמה קרוב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0bsylzs7km", "name": "רוי לב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2lrb0e2jel", "name": "זביקה שכטר רחובות", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "um3lu5k5y0", "name": "אייל פניאן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "900bfkauwj", "name": "גיא סדגר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "40k4omtuo8", "name": "עומר ברקול", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "mriw6grp0h", "name": "NovSys", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "lm9r1tmt1x", "name": "גיא בורשטיין", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "h0st4zgbnt", "name": "חיים סדגר תל אביב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "cx4kif2zdu", "name": "אורי אמדור", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "r1iy97arbx", "name": "אבי הרמן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "186gfjq222", "name": "אורי מתתוף", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "gl4411axk2", "name": "גסאן עודה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "nx4n8nu4f1", "name": "סטס פומרנץ", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "tz7zssz96s", "name": "אביגדור וילנץ חיפה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "l62chwuu35", "name": "אלון אב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "a0uel64lhg", "name": "מאיר אהרון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "17i7rivq5c", "name": "אילן דימניק", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "o4lrp4x73s", "name": "אלי אהרון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2c76ppryfl", "name": "תומר יריב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vo9ivo8lbj", "name": "יעקב אשש בית", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "d7pb441in1", "name": "ליאור בן חמו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "q79i3or5p1", "name": "אוהד סבג", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "hiuemaqtwu", "name": "שריף ע'אנם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vivfkub18x", "name": "אדיר אבדתי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "1810enqyxc", "name": "סקץ'", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0jbpm12gnb", "name": "דודו אביקזר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ghhz8gmh17", "name": "עופר לוי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ajpeeau83i", "name": "גרה שטרומר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "cmzwbhr96l", "name": "זביקה מור", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ud5s375x1f", "name": "דורון קליין", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "mzkpq8j0ni", "name": "זביקה שכטר חדרה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "jsadb0b58r", "name": "גיל פרוכטר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "4s4yzzw7d3", "name": "פימה גורה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "5on91lo3m2", "name": "צבי קירש", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ppalxn40nf", "name": "בילי ביליץ", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "7thy0cim2n", "name": "ברנרד דהן בית", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ha4t0muc4s", "name": "גולן מדרובה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "cntlz60wsk", "name": "עומרי דגול", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "qv8fsq70s0", "name": "Ha'Nassi 99", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "sn19i98wnp", "name": "סמי ניגו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "mzp240l1v5", "name": "עודד פלר חיפה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6ukgl9m21m", "name": "דב הראל", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ri5bds22vj", "name": "מורן סולן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "hi0p7s4avz", "name": "יאיר גרינברג", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "bnwzqvlme8", "name": "טל שוחט", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "barsv9krtg", "name": "אייל אדרי תל אביב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "m02j53v9m1", "name": "אביגדור וילנץ תל אביב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6ymsh4tm2b", "name": "יניב אוסקר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "7yuzm9olwf", "name": "דידי לדרר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "l79l5htc61", "name": "אליאב פדיס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "fxb9ntgjex", "name": "מוטי קרמש", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6nhgbpfpfc", "name": "גלעד פרנד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "80wofw0k3i", "name": "רן גולומב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "kaaiw7uy18", "name": "רובי אבן צור", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "27aoo0o62i", "name": "אופיר שטרית", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "n2qgzosfl8", "name": "אמיר לוי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "kxet89dmx3", "name": "טל תמיר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "qwkpnt32ms", "name": "שלומי משולם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ofr7wpu7sm", "name": "דודו סרויה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "c8zgi5ihbq", "name": "אורי אדרי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ljla4p29qn", "name": "אירן מואס תל אביב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "oonegbz2e0", "name": "חיים סדגר ליבריה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "qwu3wx1mjt", "name": "ג'וניה אלשייך", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "xpn83sfv8x", "name": "רינה אפלבאום", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "o0unkpyw24", "name": "עודד סיאג", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "hwp657r0ns", "name": "סברי מסארווה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "hdjsoy4gem", "name": "בדיקת משרד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0wlifzwq1q", "name": "רז מנשה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "cevm339mao", "name": "תומר קליש", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "5wi21dnus2", "name": "אלי רביבו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "pyb1el45yx", "name": "פרנק אפלבאום", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "95lq9pyx4b", "name": "חיים אמיל תל אביב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "7qxzqo27p0", "name": "אדי גולן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "osxsbyhu53", "name": "משה גורן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "48u8sziecf", "name": "אייל אדרי חיפה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6a9wu02oon", "name": "בועז בוק", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "81j4tcuts7", "name": "חיים אמיל קיסריה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "kufbku74p8", "name": "שמעון אקהאוס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2drdektpgg", "name": "דניאל טאיב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "zkpgv0bdrk", "name": "אייל וינברגר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "xcy0czvwxr", "name": "מיכל קליין", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2jhwssm59v", "name": "אריאל הדר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0wiggyug5a", "name": "שאבי מועלם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "jmk1adbug6", "name": "ברוך יצחק", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "37qykcpgag", "name": "מארק חיות", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "5omucx5dxf", "name": "עזמי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6synbn5z2h", "name": "עזאם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "s7ya99a4vw", "name": "אדי קייקוב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "gj2s24xoe1", "name": "חיים לסין", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "1luom3wy72", "name": "איתי ברנר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "d607qc89kk", "name": "מיכל שטרן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ca1p5xu6jt", "name": "אורי ברוקנר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "nx978lfzt0", "name": "אמיר שלם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "n582d760pd", "name": "אלוני לוי נחשון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "pqls8q8x4j", "name": "רמי ירון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "05xe2w4i0t", "name": "ליזי מוסקונה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ortxn77fp3", "name": "רפי ענונו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0h39y7dv4u", "name": "דריו קפלן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "tocd65yvyl", "name": "אריאל לכט", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vwuqh5xyyr", "name": "אלרז ברוכי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "mr3aop0kpt", "name": "רמי אבירם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "q9y02zm6c0", "name": "יריב ברוקמן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "h457yn8hxf", "name": "רונן חליבה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "g9fthaj0ct", "name": "דנין חלומות", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "e8bfgugsv6", "name": "לביא נפתלי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "gdbyx0t32g", "name": "זאב קירשנבאום", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "aq6djab97d", "name": "גיא רפאפורט", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "jb16ca3f0v", "name": "יוסי אלימלך", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "pladjui7e9", "name": "אירן מואס לוס אנג'לס ברנטווד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ta83cqyilj", "name": "ישראל חוחרון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "x74r4mnvhb", "name": "אלי פרוכטר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "tywn93gmee", "name": "דוד ריינס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "t1bohec8s8", "name": "שגיא בן משה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "j2cijsyq5z", "name": "ירון הר-שי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "zyfl6tb0ys", "name": "משה עטיאס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "8nhjts25u7", "name": "רויטל אלון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "7s8itp2b9b", "name": "עדי בליזבלאו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "g5718386cx", "name": "אוסאמה אבו-חאתום", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6j2lamojrf", "name": "ברנרד דהן קליניקה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "km7adbokf4", "name": "ווובה ויינר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "1hjpkr5qpc", "name": "מיכל טיסר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "g15gj3xq2t", "name": "מוחנד ע'אנם", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "cjum0xpqkz", "name": "בדיקה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "9mnehjwtt5", "name": "איתמר סלע", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "c8pujk61jg", "name": "ליאור כהן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "o6qi1csuow", "name": "דודו מאיר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "lw1tr1mcbk", "name": "שמעון רוט", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "oucebxg7t6", "name": "נעמי גרדינגר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "bvh3tmtrjn", "name": "זאב קירשנבאום דירה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "162fhr1y0o", "name": "מתניה כהן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vy037deglm", "name": "אמיל בן חמו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ttc8r5hm7l", "name": "שי וינינגר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "5bmrptrjg6", "name": "אסף מנסור", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6kclziqzok", "name": "אבוט פרנקו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "dwcbwbbzg8", "name": "רובי סונסינו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "1hgsux7avg", "name": "ליאור חן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "q8pv4udd70", "name": "דניאל בן דוד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "w9s1jq4m5f", "name": "בן מקס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "r9uuqjtqod", "name": "דוד בנאיון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "lumejefu96", "name": "יונתן חי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "hx2cwr8xjs", "name": "ווידאו דיזיין", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "86zxbgk4ew", "name": "שי גולן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6aactfwg4t", "name": "שוקי פדן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "qp2w90nc3a", "name": "יעקב מואס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ivt0byl7x5", "name": "אורי מיכאלי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "wnae9lavh5", "name": "מיקי שרן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0lrb4rdxqz", "name": "עודד פלר יוון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "tignqax6em", "name": "בן דהן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "dg5irzxwoq", "name": "דביר דמנד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "pl3731f4b9", "name": "ג'לאל עבאס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "wjb85n3zpw", "name": "אחמד שהאדי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "dnuruyx4ym", "name": "קובי אור", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "5w43eg1p1q", "name": "שרון מישלי חדש", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vuikd92l5y", "name": "ואאל חמוד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "m46erea1o0", "name": "רון חזן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2wp0vkhunp", "name": "אפרת פלד", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "ird3221uwg", "name": "ניר בויארסקי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "kxe6mhsjng", "name": "ניסן פרנקו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "2vp5hgicta", "name": "דפנה רזניק", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vi1haxdiss", "name": "עדן איזנקוט", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "76ih64h8j9", "name": "איאנה פריר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "vnef836wb0", "name": "גיל ברק", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "mnbzgahq9b", "name": "גיא סיון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "fmlwgymg9v", "name": "ניר וורבנר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "n0bjp7ilce", "name": "אירן המו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "v6bcqfirtx", "name": "שולי הירש", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "g7ll040rfl", "name": "שלמה גיליס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "bzfoxi134i", "name": "אלוני לוי חיפה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "y3skwv8qua", "name": "אבי אבקסיס חיפה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "iikbw311t1", "name": "תומר טאוב", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "5f6jcfp964", "name": "אסף דנון", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "kynun5zqsb", "name": "יריב קוסטיקה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "y7ki5f60ug", "name": "אנדריאה ברקן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "pit34899mt", "name": "אסף שטרית", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "uwm2yjm3tp", "name": "רונן צרור", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "8nvpn0s4t0", "name": "עופר קרוזל", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "c5qh5y4jzz", "name": "ליאון רובו", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "rwpye50glb", "name": "ניר סדגר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "6ozz9v9h3g", "name": "ירון איתי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "s8ku32bmhh", "name": "מוטי דביר", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "h3v65qojfa", "name": "יניב טל", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "m6ah0pxd5w", "name": "אמיר קראוס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "n5xzjly0di", "name": "שיר קליאוט ברדה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "g1ziypmy4c", "name": "אמיחי אלנקווה", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "p6klp4dqyi", "name": "דני בר-יצחק", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "4iil4y2gxx", "name": "ירון הראל", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "gw4w5woawq", "name": "טובה לוגסי", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "jkbbservyx", "name": "סרגיי גופמן", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "0g5h8zhad2", "name": "שלומי ארבל", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}, {"id": "xyiumbeb98", "name": "שוקי מואס", "phone": "", "email": "", "city": "", "address": "", "idNum": "", "installDate": "", "warrantyYears": "2", "projectType": "", "equipment": "", "techNotes": "", "debt": 0, "debtDesc": "", "createdAt": "2026-03-13"}];
+// Always use window.custs/window.faults/window.cfg so module and main script share same reference
+window.custs = window.custs || [];
+window.faults = window.faults || [];
+window.cfg = window.cfg || {};
+let _eCust=null, _eFault=null;
+
+// Proxy getters so all functions read from window automatically
+Object.defineProperty(window,'_custs',{get:()=>window.custs,set:v=>window.custs=v});
+Object.defineProperty(window,'_faults',{get:()=>window.faults,set:v=>window.faults=v});
+Object.defineProperty(window,'_cfg',{get:()=>window.cfg,set:v=>window.cfg=v});
+
+// === UTILS ===
+function uid(){return Math.random().toString(36).slice(2,12)}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmtD(d){if(!d)return'—';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.background=type==='err'?'#7f1d1d':type==='warn'?'#78350f':'#1e293b';
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);
+}
+// ══ WARRANTY EMAIL (EmailJS) ══
+// Setup: sign up free at emailjs.com → get Service ID, Template ID, Public Key
+const EMAILJS_SERVICE = 'YOUR_SERVICE_ID';   // ← תמלא אחרי הרשמה
+const EMAILJS_TEMPLATE = 'YOUR_TEMPLATE_ID'; // ← תמלא אחרי הרשמה
+const EMAILJS_KEY = 'YOUR_PUBLIC_KEY';        // ← תמלא אחרי הרשמה
+
+function initEmailJS(){
+  if(typeof emailjs!=='undefined') emailjs.init({publicKey:EMAILJS_KEY});
+}
+setTimeout(initEmailJS, 1000);
+
+function sendWarrantyEmail(cust, daysLeft){
+  if(typeof emailjs==='undefined') return;
+  if(!cust.email) return; // אין מייל ללקוח
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+    to_email: cust.email,
+    to_name: cust.name,
+    company: window.cfg.company||'וידאו דיזיין',
+    phone: window.cfg.phone||'',
+    days_left: daysLeft<0 ? 'פגה' : 'פגה בעוד '+daysLeft+' ימים',
+    exp_date: wExp(cust),
+  }).then(()=>toast('מייל נשלח ל-'+cust.name+' ✅'))
+    .catch(e=>toast('שגיאה בשליחת מייל','err'));
+}
+
+// בדוק אחריות שפגה ושלח מייל — רץ פעם ביום
+function checkWarrantyAlerts(){
+  const lastCheck = localStorage.getItem('last_warr_check');
+  const todayStr = today();
+  if(lastCheck === todayStr) return; // כבר בדקנו היום
+  localStorage.setItem('last_warr_check', todayStr);
+  window.custs.forEach(c=>{
+    if(!c.email || !c.installDate || !c.warrantyYears) return;
+    const s = wStat(c);
+    if(!s) return;
+    // שלח מייל אם נותרו 30 יום, 7 ימים, או ביום הפקיעה
+    if(s.d===30||s.d===7||s.d===0||s.d===-1){
+      sendWarrantyEmail(c, s.d);
+    }
+  });
+}
+
+function avClr(n){
+  const c=['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#fb923c','#ec4899'];
+  let h=0;for(const x of(n||'?'))h=(h*31+x.charCodeAt(0))%c.length;return c[h];
+}
+function ini(n){if(!n)return'?';const p=n.trim().split(' ');return p.length>=2?p[0][0]+p[1][0]:n.slice(0,2)}
+function wExp(c){
+  if(!c.installDate||!c.warrantyYears)return null;
+  const d=new Date(c.installDate);d.setFullYear(d.getFullYear()+parseInt(c.warrantyYears)||0);
+  return d.toISOString().split('T')[0];
+}
+function dLeft(s){return Math.round((new Date(s)-new Date())/86400000)}
+function wStat(c){
+  const e=wExp(c);if(!e)return null;
+  const d=dLeft(e);
+  return{d,exp:e,cls:d<0?'br':d<90?'by':'bg',lbl:d<0?'פגה':'בתוקף'};
+}
+
+// === NAVIGATION ===
+function nav(page){
+  document.querySelectorAll('.pg').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.nav-btn,.mnb').forEach(e=>e.classList.remove('on'));
+  const pg=document.getElementById('pg-'+page);
+  const nb=document.getElementById('nb-'+page);
+  if(pg)pg.classList.add('on'); else return;
+  if(nb)nb.classList.add('on');
+  // mobile nav
+  document.querySelectorAll('.mnb').forEach(b=>{
+    if(b.getAttribute('onclick')==="nav('"+page+"')")b.classList.add('on');
+  });
+  const R={customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,dashboard:renderDash,settings:loadSettings};
+  if(R[page])R[page]();
+}
+
+// === MODAL ===
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+
+// === DASHBOARD ===
+function renderDash(){
+  const el=document.getElementById('st-total');if(!el)return;
+  let wc=0,dc=0,ds=0;
+  const endY=new Date(new Date().getFullYear(),11,31);
+  window.custs.forEach(c=>{
+    const e=wExp(c);
+    if(e){const d=dLeft(e);if(d<0||(d>=0&&new Date(e)<=endY))wc++;}
+    if(c.debt>0){dc++;ds+=parseFloat(c.debt)||0;}
+  });
+  document.getElementById('st-total').textContent=window.custs.length;
+  document.getElementById('st-warr').textContent=wc;
+  document.getElementById('st-debts').textContent=dc;
+  document.getElementById('st-debt-sum').textContent='₪'+ds.toLocaleString('he-IL');
+  document.getElementById('st-faults').textContent=window.faults.filter(f=>f.status!=='done').length;
+  // panel warr
+  const pw=window.custs.filter(c=>{const s=wStat(c);return s&&s.d<=90;}).slice(0,6);
+  document.getElementById('pan-warr').innerHTML=pw.length
+    ?pw.map(c=>{const s=wStat(c);return'<div class="ai '+(s.d<0?'danger':'warn')+'" onclick="jumpTo(\''+c.id+'\')">'
+      +'<span>'+(s.d<0?'🔴':'🟡')+'</span><div><div style="font-weight:600;font-size:13px">'+c.name+'</div>'
+      +'<div style="font-size:11px;color:var(--tx3)">'+(s.d<0?'פגה לפני '+Math.abs(s.d)+' ימים':'עוד '+s.d+' ימים')+'</div></div></div>';}).join('')
+    :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ הכל תקין</div>';
+  // panel debts
+  const pd=window.custs.filter(c=>c.debt>0).slice(0,6);
+  document.getElementById('pan-debts').innerHTML=pd.length
+    ?pd.map(c=>'<div class="ai danger" onclick="jumpTo(\''+c.id+'\')">'
+      +'<span>💰</span><div><div style="font-weight:600;font-size:13px">'+c.name+'</div>'
+      +'<div style="font-size:11px;color:var(--tx3)">₪'+parseFloat(c.debt).toLocaleString('he-IL')+'</div></div></div>').join('')
+    :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין חובות</div>';
+  // panel window.faults
+  const pf=window.faults.filter(f=>f.status!=='done');
+  document.getElementById('pan-faults').innerHTML=pf.length
+    ?pf.map(f=>{const c=window.custs.find(x=>x.id===f.custId);
+      return'<div class="ai warn" onclick="editFaultId(\''+f.id+'\')">'
+        +'<span>🔧</span><div><div style="font-weight:600;font-size:13px">'+(c?c.name:'לא ידוע')+'</div>'
+        +'<div style="font-size:11px;color:var(--tx3)">'+f.desc.slice(0,40)+'</div></div></div>';}).join('')
+    :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין תקלות</div>';
+}
+function jumpTo(id){nav('customers');setTimeout(()=>viewCust(id),100)}
+
+// === CUSTOMERS ===
+function renderCusts(){
+  const q=(document.getElementById('q-custs').value||'').toLowerCase();
+  const fw=document.getElementById('f-warr').value;
+  const fd=document.getElementById('f-debt').value;
+  let list=window.custs.filter(c=>{
+    if(q&&!c.name.toLowerCase().includes(q)&&!(c.phone||'').includes(q)&&!(c.city||'').toLowerCase().includes(q))return false;
+    if(fw){const s=wStat(c);
+      if(fw==='expired'&&(!s||s.d>=0))return false;
+      if(fw==='soon'&&(!s||s.d<0||s.d>90))return false;
+      if(fw==='valid'&&(!s||s.d<0))return false;}
+    if(fd==='has'&&!(c.debt>0))return false;
+    if(fd==='no'&&c.debt>0)return false;
+    return true;
+  }).sort((a,b)=>a.name.localeCompare(b.name,'he'));
+  document.getElementById('cnt-custs').textContent=list.length+' לקוחות';
+  const tb=document.getElementById('tb-custs');
+  if(!list.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--tx3)">לא נמצאו לקוחות</td></tr>';return;}
+  tb.innerHTML=list.map(c=>{
+    const s=wStat(c);
+    return'<tr>'
+      +'<td><div class="ci"><div class="av" style="background:'+avClr(c.name)+'">'+ini(c.name)+'</div>'
+      +'<div><div style="font-weight:600">'+c.name+'</div>'+(c.projectType?'<div style="font-size:11px;color:var(--tx3)">'+c.projectType+'</div>':'')+'</div></div></td>'
+      +'<td>'+(c.phone?'<a href="tel:'+c.phone+'" style="color:var(--acc);text-decoration:none">'+c.phone+'</a>':'—')+'</td>'
+      +'<td>'+(c.city||'—')+'</td>'
+      +'<td>'+(s?'<span class="badge '+s.cls+'">'+s.lbl+'</span>':'—')+'</td>'
+      +'<td>'+(c.debt>0?'<span class="badge br">₪'+parseFloat(c.debt).toLocaleString('he-IL')+'</span>':'<span class="badge bg">✓</span>')+'</td>'
+      +'<td style="white-space:nowrap">'
+      +'<button class="btn bs btn-sm" onclick="viewCust(\''+c.id+'\')">👁️</button> '
+      +'<button class="btn bs btn-sm" onclick="editCustId(\''+c.id+'\')">✏️</button> '
+      +'<button class="btn bs btn-sm" onclick="openNewFault(\''+c.id+'\')">🔧</button>'
+      +'</td></tr>';
+  }).join('');
+}
+function openNewCust(){
+  _eCust=null;
+  document.getElementById('M-cust-title').textContent='לקוח חדש';
+  document.getElementById('mc-del').style.display='none';
+  ['name','phone','email','city','address','project','equip','notes','debt-desc'].forEach(f=>{const e=document.getElementById('mc-'+f);if(e)e.value=''});
+  document.getElementById('mc-install').value='';
+  document.getElementById('mc-warr').value='2';
+  document.getElementById('mc-debt').value='0';
+  openM('M-cust');
+}
+function editCustId(id){
+  const c=window.custs.find(x=>x.id===id);if(!c)return;
+  _eCust=id;
+  document.getElementById('M-cust-title').textContent='עריכת לקוח';
+  document.getElementById('mc-del').style.display='';
+  document.getElementById('mc-name').value=c.name||'';
+  document.getElementById('mc-phone').value=c.phone||'';
+  document.getElementById('mc-email').value=c.email||'';
+  document.getElementById('mc-city').value=c.city||'';
+  document.getElementById('mc-address').value=c.address||'';
+  document.getElementById('mc-install').value=c.installDate||'';
+  document.getElementById('mc-warr').value=c.warrantyYears||'2';
+  document.getElementById('mc-project').value=c.projectType||'';
+  document.getElementById('mc-equip').value=c.equipment||'';
+  document.getElementById('mc-debt').value=c.debt||0;
+  document.getElementById('mc-debt-desc').value=c.debtDesc||'';
+  document.getElementById('mc-notes').value=c.techNotes||'';
+  openM('M-cust');
+}
+function saveCust(){
+  const name=document.getElementById('mc-name').value.trim();
+  if(!name){toast('שם הלקוח חובה','err');return;}
+  const c={id:_eCust||uid(),name,
+    phone:document.getElementById('mc-phone').value.trim(),
+    email:document.getElementById('mc-email').value.trim(),
+    city:document.getElementById('mc-city').value.trim(),
+    address:document.getElementById('mc-address').value.trim(),
+    installDate:document.getElementById('mc-install').value,
+    warrantyYears:document.getElementById('mc-warr').value,
+    projectType:document.getElementById('mc-project').value.trim(),
+    equipment:document.getElementById('mc-equip').value.trim(),
+    techNotes:document.getElementById('mc-notes').value.trim(),
+    debt:parseFloat(document.getElementById('mc-debt').value)||0,
+    debtDesc:document.getElementById('mc-debt-desc').value.trim(),
+    createdAt:_eCust?(window.custs.find(x=>x.id===_eCust)||{}).createdAt:today()
+  };
+  if(_eCust)window.custs=window.custs.map(x=>x.id===_eCust?c:x);else window.custs.push(c);
+  dbSaveCusts();closeM('M-cust');renderCusts();renderDash();
+  toast(_eCust?'לקוח עודכן ✅':'לקוח נוסף ✅');
+}
+async function delCust(){
+  if(!confirm('למחוק לקוח זה?'))return;
+  const id=_eCust;
+  // מחק מ-Firebase קודם
+  if(window._dbDel){
+    const ok = await window._dbDel('customers', id);
+    if(!ok){ toast('שגיאה במחיקה','err'); return; }
+  }
+  window.custs=window.custs.filter(x=>x.id!==id);
+  closeM('M-cust');renderCusts();renderDash();
+  toast('לקוח נמחק ✅');
+}
+function viewCust(id){
+  const c=window.custs.find(x=>x.id===id);if(!c)return;
+  const s=wStat(c);
+  document.getElementById('Mv-name').textContent=c.name;
+  document.getElementById('Mv-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+      ${c.phone?`<div><div class="flbl">טלפון</div><a href="tel:${c.phone}" style="color:var(--acc)">${c.phone}</a></div>`:''}
+      ${c.email?`<div><div class="flbl">מייל</div><div>${c.email}</div></div>`:''}
+      ${c.city?`<div><div class="flbl">עיר</div><div>${c.city}</div></div>`:''}
+      ${c.address?`<div style="grid-column:1/-1"><div class="flbl">כתובת</div><div>${c.address}</div></div>`:''}
+      ${c.installDate?`<div><div class="flbl">התקנה</div><div>${fmtD(c.installDate)}</div></div>`:''}
+      ${c.warrantyYears?`<div><div class="flbl">אחריות</div><div>${c.warrantyYears} שנים ${s?'<span class="badge '+s.cls+'">'+s.lbl+'</span>':''}</div></div>`:''}
+      ${c.projectType?`<div><div class="flbl">פרויקט</div><div>${c.projectType}</div></div>`:''}
+      ${c.equipment?`<div style="grid-column:1/-1"><div class="flbl">ציוד</div><div>${c.equipment}</div></div>`:''}
+      ${c.debt>0?`<div style="grid-column:1/-1"><div class="flbl">חוב</div><div style="color:var(--red);font-weight:700">₪${parseFloat(c.debt).toLocaleString('he-IL')} ${c.debtDesc?' — '+c.debtDesc:''}</div></div>`:''}
+      ${c.techNotes?`<div style="grid-column:1/-1"><div class="flbl">הערות</div><div style="color:var(--tx2)">${c.techNotes}</div></div>`:''}
+    </div>`;
+  // כפתור מייל אחריות בתצוגת לקוח
+  const mvMail = document.getElementById('Mv-mail');
+  if(mvMail){
+    const s2=wStat(c);
+    if(s2 && c.email){ mvMail.style.display=''; mvMail.onclick=()=>sendWarrantyEmail(c,s2.d); }
+    else mvMail.style.display='none';
+  }
+  document.getElementById('Mv-del').onclick=()=>{
+    if(!confirm('למחוק?'))return;
+    if(window._dbDel){
+      window._dbDel('customers',id).then(ok=>{
+        if(!ok){toast('שגיאה במחיקה','err');return;}
+        window.custs=window.custs.filter(x=>x.id!==id);
+        closeM('M-view');renderCusts();renderDash();
+        toast('לקוח נמחק ✅');
+      });
+    } else {
+      window.custs=window.custs.filter(x=>x.id!==id);
+      closeM('M-view');renderCusts();renderDash();
+    }
+  };
+  document.getElementById('Mv-edit').onclick=()=>{closeM('M-view');editCustId(id)};
+  document.getElementById('Mv-fault').onclick=()=>{closeM('M-view');openNewFault(id)};
+  openM('M-view');
+}
+
+// === WARRANTIES ===
+function renderWarr(){
+  const list=window.custs.filter(c=>c.installDate&&c.warrantyYears).sort((a,b)=>{
+    const sa=wStat(a),sb=wStat(b);return(sa?sa.d:9999)-(sb?sb.d:9999);
+  });
+  document.getElementById('cnt-warr').textContent=list.length+' לקוחות';
+  const tb=document.getElementById('tb-warr');
+  if(!list.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--tx3)">אין נתוני אחריות</td></tr>';return;}
+  tb.innerHTML=list.map(c=>{
+    const s=wStat(c);
+    const pct=s?Math.min(100,Math.max(0,Math.round((new Date()-new Date(c.installDate))/(new Date(s.exp)-new Date(c.installDate))*100))):0;
+    const bc=s?(s.d<0?'var(--red)':s.d<90?'var(--yel)':'var(--grn)'):'var(--grn)';
+    return'<tr>'
+      +'<td><div class="ci"><div class="av" style="background:'+avClr(c.name)+';width:28px;height:28px;font-size:10px">'+ini(c.name)+'</div>'
+      +'<span style="font-weight:600;cursor:pointer" onclick="viewCust(\''+c.id+'\')">'+c.name+'</span></div></td>'
+      +'<td>'+fmtD(c.installDate)+'</td>'
+      +'<td>'+c.warrantyYears+' שנים</td>'
+      +'<td>'+(s?fmtD(s.exp):'—')+'</td>'
+      +'<td>'+(s?'<span class="badge '+s.cls+'">'+s.lbl+(s.d>=0?' ('+s.d+'י)':'')+'</span>':'—')+'</td>'
+      +'<td style="min-width:100px"><div class="pb"><div class="pb-fill" style="width:'+pct+'%;background:'+bc+'"></div></div>'
+      +'<div style="font-size:10px;color:var(--tx3);margin-top:2px">'+pct+'%</div></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// === DEBTS ===
+function renderDebts(){
+  const list=window.custs.filter(c=>c.debt>0).sort((a,b)=>b.debt-a.debt);
+  const total=list.reduce((s,c)=>s+(parseFloat(c.debt)||0),0);
+  document.getElementById('cnt-debts').textContent=list.length+' לקוחות | סה״כ: ₪'+total.toLocaleString('he-IL');
+  const tb=document.getElementById('tb-debts');
+  if(!list.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--tx3)">✅ אין חובות פתוחים</td></tr>';return;}
+  tb.innerHTML=list.map(c=>'<tr>'
+    +'<td><div class="ci"><div class="av" style="background:'+avClr(c.name)+';width:28px;height:28px;font-size:10px">'+ini(c.name)+'</div>'
+    +'<span style="font-weight:600;cursor:pointer" onclick="viewCust(\''+c.id+'\')">'+c.name+'</span></div></td>'
+    +'<td>'+(c.phone?'<a href="tel:'+c.phone+'" style="color:var(--acc)">'+c.phone+'</a>':'—')+'</td>'
+    +'<td><span style="color:var(--red);font-weight:700">₪'+parseFloat(c.debt).toLocaleString('he-IL')+'</span></td>'
+    +'<td style="color:var(--tx3);font-size:12px">'+(c.debtDesc||'—')+'</td>'
+    +'<td><button class="btn bs btn-sm" onclick="markPaid(\''+c.id+'\')">✅ שולם</button></td>'
+    +'</tr>'
+  ).join('');
+}
+function markPaid(id){
+  if(!confirm('לסמן כשולם?'))return;
+  window.custs=window.custs.map(c=>c.id===id?{...c,debt:0,debtDesc:''}:c);
+  dbSaveCusts();renderDebts();renderDash();toast('סומן כשולם ✅');
+}
+
+// === FAULTS ===
+function renderFaults(){
+  const q=(document.getElementById('q-faults').value||'').toLowerCase();
+  const sf=document.getElementById('f-fstatus').value;
+  let list=window.faults.filter(f=>{
+    const c=window.custs.find(x=>x.id===f.custId);
+    if(q&&!(c?c.name:'').toLowerCase().includes(q)&&!f.desc.toLowerCase().includes(q))return false;
+    if(sf&&f.status!==sf)return false;
+    return true;
+  }).sort((a,b)=>{
+    if(a.status==='done'&&b.status!=='done')return 1;
+    if(b.status==='done'&&a.status!=='done')return -1;
+    const o={urgent:0,high:1,medium:2,low:3};
+    return(o[a.priority]||2)-(o[b.priority]||2);
+  });
+  document.getElementById('cnt-faults').textContent=list.length+' תקלות';
+  const el=document.getElementById('list-faults');
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:50px;color:var(--tx3)">🔧<br><br>אין תקלות</div>';return;}
+  const scls={open:'br',scheduled:'bb',done:'bg'};
+  const slbl={open:'🔴 פתוחה',scheduled:'📅 נקבע תאריך',done:'✅ טופלה'};
+  const plbl={urgent:'🚨 דחוף',high:'🔴 גבוהה',medium:'🟡 בינונית',low:'🟢 נמוכה'};
+  el.innerHTML='<div class="fg">'+list.map(f=>{
+    const c=window.custs.find(x=>x.id===f.custId);
+    return'<div class="fc" onclick="editFaultId(\''+f.id+'\')">'
+      +'<div class="fch"><div class="ci">'
+      +'<div class="av" style="background:'+avClr(c?c.name:'?')+';width:28px;height:28px;font-size:10px">'+ini(c?c.name:'?')+'</div>'
+      +'<div><div style="font-weight:700;font-size:13px">'+(c?c.name:'לא ידוע')+'</div>'
+      +(c&&c.phone?'<div style="font-size:11px;color:var(--tx3)">'+c.phone+'</div>':'')+'</div></div>'
+      +'<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">'
+      +'<span class="badge '+scls[f.status||'open']+'">'+slbl[f.status||'open']+'</span>'
+      +(f.date?'<button class="btn bs btn-sm" onclick="event.stopPropagation();gcalFault(\''+f.id+'\')">📅</button>':'')
+      +'</div></div>'
+      +'<div style="font-size:11px;margin-bottom:4px">'
+      +({fault:'🔧 תקלה',service:'🛠️ שירות',installation:'📦 המשך התקנה',other:'📋 אחר'}[f.type||'fault']||'🔧 תקלה')
+      +(f.amount>0?' &nbsp;|&nbsp; 💰 ₪'+f.amount.toLocaleString('he-IL')+(f.paid==='yes'?' ✅':f.paid==='partial'?' (חלקי)':''):'')
+      +'</div>'
+      +'<div class="fdesc">'+f.desc+'</div>'
+      +(f.updatedBy?'<div style="font-size:10px;color:var(--tx3);margin-bottom:4px">עודכן ע״י: <span style="font-weight:700;color:'+(USERS.find(u=>u.name===f.updatedBy)||{color:'var(--tx2)'}).color+'">'+f.updatedBy+'</span></div>':'')
+      +'<div class="fmeta"><span>'+plbl[f.priority||'medium']+'</span>'
+      +(f.date?'<span style="color:var(--acc)">📅 '+fmtD(f.date)+(f.time?' '+f.time:'')+'</span>':'')
+      +(f.notes?'<span>📝 '+f.notes+'</span>':'')
+      +'</div></div>';
+  }).join('')+'</div>';
+}
+function openNewFault(preCustId){
+  _eFault=null;
+  document.getElementById('M-fault-title').textContent='תקלה חדשה';
+  document.getElementById('mf-del').style.display='none';
+  const sel=document.getElementById('mf-cust');
+  sel.innerHTML='<option value="">בחר לקוח</option>'
+    +[...window.custs].sort((a,b)=>a.name.localeCompare(b.name,'he'))
+    .map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+  if(preCustId)sel.value=preCustId;
+  document.getElementById('mf-desc').value='';
+  document.getElementById('mf-pri').value='medium';
+  document.getElementById('mf-status').value='open';
+  document.getElementById('mf-date').value='';
+  document.getElementById('mf-time').value='';
+  document.getElementById('mf-notes').value='';
+  document.getElementById('mf-type').value='fault';
+  document.getElementById('mf-amount').value='';
+  document.getElementById('mf-paid').value='no';
+  openM('M-fault');
+}
+function editFaultId(id){
+  const f=window.faults.find(x=>x.id===id);if(!f)return;
+  _eFault=id;
+  document.getElementById('M-fault-title').textContent='עריכת תקלה';
+  document.getElementById('mf-del').style.display='';
+  const sel=document.getElementById('mf-cust');
+  sel.innerHTML='<option value="">בחר לקוח</option>'
+    +[...window.custs].sort((a,b)=>a.name.localeCompare(b.name,'he'))
+    .map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+  sel.value=f.custId||'';
+  document.getElementById('mf-type').value=f.type||'fault';
+  document.getElementById('mf-desc').value=f.desc||'';
+  document.getElementById('mf-pri').value=f.priority||'medium';
+  document.getElementById('mf-status').value=f.status||'open';
+  document.getElementById('mf-date').value=f.date||'';
+  document.getElementById('mf-time').value=f.time||'';
+  document.getElementById('mf-notes').value=f.notes||'';
+  document.getElementById('mf-amount').value=f.amount||'';
+  document.getElementById('mf-paid').value=f.paid||'no';
+  openM('M-fault');
+}
+function saveFault(){
+  const custId=document.getElementById('mf-cust').value;
+  const desc=document.getElementById('mf-desc').value.trim();
+  if(!custId||!desc){toast('בחר לקוח ותאר את התקלה','err');return;}
+  const f={id:_eFault||uid(),custId,desc,
+    type:document.getElementById('mf-type').value,
+    priority:document.getElementById('mf-pri').value,
+    status:document.getElementById('mf-status').value,
+    date:document.getElementById('mf-date').value,
+    time:document.getElementById('mf-time').value,
+    notes:document.getElementById('mf-notes').value.trim(),
+    amount:parseFloat(document.getElementById('mf-amount').value)||0,
+    paid:document.getElementById('mf-paid').value,
+    created:_eFault?(window.faults.find(x=>x.id===_eFault)||{}).created:today(),
+    updatedBy:window._currentUser||'לא ידוע'
+  };
+  if(_eFault)window.faults=window.faults.map(x=>x.id===_eFault?f:x);else window.faults.push(f);
+  dbSaveFaults();closeM('M-fault');renderFaults();renderDash();
+  toast(_eFault?'תקלה עודכנה ✅':'תקלה נוספה ✅');
+}
+async function delFault(){
+  if(!confirm('למחוק תקלה זו?'))return;
+  const id=_eFault;
+  // מחק מ-Firebase קודם, אחר כך עדכן UI
+  if(window._dbDel){
+    const ok = await window._dbDel('faults', id);
+    if(!ok){ toast('שגיאה במחיקה','err'); return; }
+  }
+  window.faults=window.faults.filter(x=>x.id!==id);
+  closeM('M-fault');renderFaults();renderDash();
+  toast('תקלה נמחקה ✅');
+}
+
+// === SETTINGS ===
+function loadSettings(){
+  document.getElementById('s-company').value=window.cfg.company||'';
+  document.getElementById('s-phone').value=window.cfg.phone||'';
+  document.getElementById('s-email').value=window.cfg.email||'';
+  document.getElementById('s-gcal').value=window.cfg.gcal||'';
+}
+function saveSettings(){
+  window.cfg.company=document.getElementById('s-company').value.trim();
+  window.cfg.phone=document.getElementById('s-phone').value.trim();
+  window.cfg.email=document.getElementById('s-email').value.trim();
+  window.cfg.gcal=document.getElementById('s-gcal').value.trim();
+  dbSaveCfg();toast('הגדרות נשמרו ✅');
+}
+
+// === DB STUBS (overridden by module) ===
+function dbSaveCusts(){if(window._dbSaveCusts)window._dbSaveCusts(window.custs);}
+function dbSaveFaults(){if(window._dbSaveFaults)window._dbSaveFaults(window.faults);}
+function dbSaveCfg(){if(window._dbSaveCfg)window._dbSaveCfg(window.cfg);localStorage.setItem('crm_cfg',JSON.stringify(window.cfg));}
+function dbDel(col,id){if(window._dbDel)window._dbDel(col,id);}
+
+// === GOOGLE CALENDAR ===
+const GCAL_CID='830672993595-f7fdfqj14qtnns6g0cmrb7m7nh30obqg.apps.googleusercontent.com';
+let gcalTok=null, wkOffset=0;
+function gcalInit(){
+  const saved=localStorage.getItem('gcal_token');
+  if(saved){try{gcalTok=JSON.parse(saved);showWkGrid();fetchWk();return;}catch(e){}}
+  const si=document.getElementById('gcal-signin');
+  if(si)si.style.display='block';
+}
+function gcalSignIn(){
+  if(typeof google==='undefined'){toast('Google API לא נטען','err');return;}
+  google.accounts.oauth2.initTokenClient({
+    client_id:GCAL_CID,
+    scope:'https://www.googleapis.com/auth/calendar.readonly',
+    callback:(r)=>{
+      if(r.error)return;
+      gcalTok=r;localStorage.setItem('gcal_token',JSON.stringify(r));
+      document.getElementById('gcal-signin').style.display='none';
+      showWkGrid();fetchWk();
+    }
+  }).requestAccessToken();
+}
+function gcalSignOut(){
+  if(gcalTok&&typeof google!=='undefined')google.accounts.oauth2.revoke(gcalTok.access_token,()=>{});
+  gcalTok=null;localStorage.removeItem('gcal_token');
+  document.getElementById('gcal-grid').style.display='none';
+  document.getElementById('gcal-out').style.display='none';
+  document.getElementById('gcal-signin').style.display='block';
+}
+function wkRange(off){
+  const now=new Date();const sun=new Date(now);
+  sun.setDate(now.getDate()-now.getDay()+off*7);sun.setHours(0,0,0,0);
+  const sat=new Date(sun);sat.setDate(sun.getDate()+6);sat.setHours(23,59,59,999);
+  return{sun,sat};
+}
+function showWkGrid(){
+  const{sun,sat}=wkRange(wkOffset);
+  const o={day:'numeric',month:'long'};
+  document.getElementById('wk-label').textContent=sun.toLocaleDateString('he-IL',o)+' — '+sat.toLocaleDateString('he-IL',o);
+  document.getElementById('gcal-grid').style.display='block';
+  document.getElementById('gcal-out').style.display='flex';
+  document.getElementById('gcal-signin').style.display='none';
+}
+async function fetchWk(){
+  if(!gcalTok)return;
+  const{sun,sat}=wkRange(wkOffset);
+  document.getElementById('gcal-grid').innerHTML='<div style="color:var(--tx3);text-align:center;padding:16px;font-size:13px">טוען...</div>';
+  try{
+    const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin='+encodeURIComponent(sun.toISOString())+'&timeMax='+encodeURIComponent(sat.toISOString())+'&singleEvents=true&orderBy=startTime&maxResults=50',
+      {headers:{Authorization:'Bearer '+gcalTok.access_token}});
+    if(r.status===401){gcalSignOut();return;}
+    const d=await r.json();renderWkGrid(d.items||[]);
+  }catch(e){document.getElementById('gcal-grid').innerHTML='<div style="color:var(--red);text-align:center;padding:16px">שגיאה בטעינת היומן</div>';}
+}
+function renderWkGrid(evs){
+  const{sun}=wkRange(wkOffset);
+  const days=[],tod=new Date().toISOString().split('T')[0];
+  for(let i=0;i<7;i++){const d=new Date(sun);d.setDate(sun.getDate()+i);days.push(d);}
+  const byDay={};days.forEach(d=>{byDay[d.toISOString().split('T')[0]]=[];});
+  evs.forEach(ev=>{const k=(ev.start.dateTime||ev.start.date).split('T')[0];if(byDay[k]!==undefined)byDay[k].push(ev);});
+  const dh=['א','ב','ג','ד','ה','ו','ש'];
+  const cl=['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#fb923c'];
+  document.getElementById('gcal-grid').innerHTML=
+    '<div style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px">'+
+    days.map((d,i)=>{
+      const key=d.toISOString().split('T')[0];const isT=key===tod;
+      const dayEvs=byDay[key]||[];
+      return'<div style="min-width:110px;flex:1;border:1px solid '+(isT?'var(--acc)':'var(--brd)')+';border-radius:8px;background:'+(isT?'rgba(59,130,246,.07)':'var(--sur2)')+';">'
+        +'<div style="padding:6px 8px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
+        +'<span style="font-size:10px;color:var(--tx3)">יום '+dh[i]+'</span>'
+        +'<span style="font-size:16px;font-weight:800;color:'+(isT?'var(--acc)':'var(--tx)')+'">'+d.getDate()+'</span></div>'
+        +'<div style="padding:4px 5px;min-height:80px">'
+        +(dayEvs.length===0?'<div style="font-size:10px;color:var(--tx3);text-align:center;padding:10px 0">פנוי</div>'
+          :dayEvs.map(ev=>{
+            const st=ev.start.dateTime?new Date(ev.start.dateTime).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'כל היום';
+            const c=cl[(ev.summary||'').charCodeAt(0)%cl.length];
+            return'<div style="background:'+c+'22;border-right:2px solid '+c+';border-radius:3px;padding:2px 4px;margin-bottom:3px;overflow:hidden">'
+              +'<div style="font-size:9px;color:'+c+';font-weight:700">'+st+'</div>'
+              +'<div style="font-size:10px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(ev.summary||'ללא כותרת')+'</div>'
+              +'</div>';}).join(''))
+        +'</div></div>';
+    }).join('')+'</div>';
+}
+function wkPrev(){wkOffset--;showWkGrid();fetchWk();}
+function wkNext(){wkOffset++;showWkGrid();fetchWk();}
+function wkToday(){wkOffset=0;showWkGrid();fetchWk();}
+function gcalFault(id){
+  const f=window.faults.find(x=>x.id===id);if(!f||!f.date)return;
+  const c=window.custs.find(x=>x.id===f.custId);
+  const st=f.date.replace(/-/g,'')+'T'+(f.time||'09:00').replace(':','')+'00';
+  const hr=f.time?String(parseInt(f.time.split(':')[0])+1).padStart(2,'0')+f.time.split(':')[1]:'1000';
+  const en=f.date.replace(/-/g,'')+'T'+hr+'00';
+  const url='https://calendar.google.com/calendar/render?action=TEMPLATE'
+    +'&text='+encodeURIComponent('תקלה: '+(c?c.name:'לקוח'))
+    +'&dates='+st+'/'+en
+    +'&details='+encodeURIComponent(f.desc+(c&&c.phone?'\nטלפון: '+c.phone:'')+(c&&c.address?'\nכתובת: '+c.address:''))
+    +'&location='+encodeURIComponent(c&&c.address?c.address:'')
+    +(window.cfg.gcal?'&authuser='+encodeURIComponent(window.cfg.gcal):'');
+  window.open(url,'_blank');
+}
+
+
+// ══ USER LOGIN SYSTEM ══
+const USERS = [
+  {"name": "רז",   "pass": "Raz4123",   "color": "#3b82f6", "role": "admin"},
+  {"name": "אופיר","pass": "ophir4123", "color": "#10b981", "role": "tech"},
+  {"name": "גלאל", "pass": "Jalal4123", "color": "#f59e0b", "role": "tech"},
+  {"name": "מוטי", "pass": "Moti4123",  "color": "#06b6d4", "role": "tech"}
+];
+window._currentUser = null;
+window._currentColor = '#3b82f6';
+let _loginTarget = null;
+
+function initLogin(){
+  // Check if already logged in this session
+  const saved = sessionStorage.getItem('crm_user');
+  if(saved){
+    const u = JSON.parse(saved);
+    applyUser(u);
+    return;
+  }
+  // Build user buttons
+  const btns = document.getElementById('user-btns');
+  btns.innerHTML = USERS.map(u=>
+    '<button onclick="selectUser(\'' + u.name + '\')" style="background:' + u.color + '22;border:2px solid ' + u.color + ';border-radius:10px;padding:14px 8px;cursor:pointer;font-family:Heebo,sans-serif;color:' + u.color + ';font-weight:700;font-size:15px">'
+    + '<div style=\"font-size:24px;margin-bottom:4px\">' + u.name[0] + '</div>' + u.name + '</button>'
+  ).join('');
+  document.getElementById('login-screen').style.display='flex';
+}
+
+function selectUser(name){
+  _loginTarget = USERS.find(u=>u.name===name);
+  document.getElementById('login-greeting').textContent = 'שלום ' + name + ', הכנס סיסמה:';
+  document.getElementById('login-pass-area').style.display='block';
+  document.getElementById('user-btns').style.display='none';
+  document.getElementById('login-err').style.display='none';
+  document.getElementById('login-pass').value='';
+  setTimeout(()=>document.getElementById('login-pass').focus(),100);
+}
+
+function doLogin(){
+  const pass = document.getElementById('login-pass').value;
+  if(!_loginTarget || pass !== _loginTarget.pass){
+    document.getElementById('login-err').style.display='block';
+    return;
+  }
+  applyUser(_loginTarget);
+  sessionStorage.setItem('crm_user', JSON.stringify(_loginTarget));
+}
+
+function applyUser(u){
+  window._currentUser = u.name;
+  window._currentColor = u.color;
+  document.getElementById('login-screen').style.display='none';
+  // Show user badge in sidebar
+  const badge = document.getElementById('user-badge');
+  if(badge){
+    badge.textContent = u.name;
+    badge.style.background = u.color + '22';
+    badge.style.color = u.color;
+    badge.style.border = '1px solid ' + u.color + '44';
+  }
+  // Accent color for this user
+  document.documentElement.style.setProperty('--acc', u.color);
+}
+
+function resetLoginUI(){
+  _loginTarget=null;
+  document.getElementById('login-pass-area').style.display='none';
+  document.getElementById('user-btns').style.display='grid';
+}
+
+function logout(){
+  sessionStorage.removeItem('crm_user');
+  window._currentUser=null;
+  document.getElementById('login-screen').style.display='flex';
+  resetLoginUI();
+}
+
+// Init login on load
+initLogin();
+
+// === INIT ===
+(function(){try{const b=localStorage.getItem('crm_cfg');if(b)Object.assign(window.cfg,JSON.parse(b));}catch(e){}}());
+
+</script>
+<script type="module">
+
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
+import{getFirestore,collection,doc,getDocs,setDoc,deleteDoc,onSnapshot}from'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
+
+const app=initializeApp({
+  apiKey:"AIzaSyBDclbzeGdzxzS1rklQRDYp3cnndVOVTuA",
+  authDomain:"vd-clientpro.firebaseapp.com",
+  projectId:"vd-clientpro",
+  storageBucket:"vd-clientpro.firebasestorage.app",
+  messagingSenderId:"35797095244",
+  appId:"1:35797095244:web:d1d0d572fb26571cf6b5e9"
+});
+const db=getFirestore(app);
+
+function loader(msg){
+  let el=document.getElementById('_ldr');
+  if(!el){
+    el=document.createElement('div');el.id='_ldr';
+    el.style.cssText='position:fixed;inset:0;background:rgba(10,14,26,.96);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px';
+    const sp=document.createElement('div');
+    sp.style.cssText='width:38px;height:38px;border:3px solid #1e293b;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite';
+    const tx=document.createElement('div');tx.id='_ldr_t';
+    tx.style.cssText='font-size:13px;color:#94a3b8;font-family:Heebo,sans-serif';
+    el.append(sp,tx);document.body.appendChild(el);
+  }
+  document.getElementById('_ldr_t').textContent=msg||'';
+}
+function hideLoader(){const el=document.getElementById('_ldr');if(el)el.remove();}
+
+window._dbSaveCusts=async(items)=>{
+  try{await Promise.all(items.map(c=>setDoc(doc(db,'customers',c.id),c)));}catch(e){console.error(e);}
+};
+window._dbSaveFaults=async(items)=>{
+  try{await Promise.all(items.map(f=>setDoc(doc(db,'faults',f.id),f)));}catch(e){console.error(e);}
+};
+window._dbSaveCfg=async(cfg)=>{
+  try{await setDoc(doc(db,'settings','main'),cfg);}catch(e){console.error(e);}
+  localStorage.setItem('crm_cfg',JSON.stringify(cfg));
+};
+window._dbDel=async(col,id)=>{
+  try{
+    await deleteDoc(doc(db,col,id));
+    return true;
+  }catch(e){
+    console.error('Delete failed:',e);
+    return false;
+  }
+};
+
+async function loadAll(){
+  loader('מתחבר לענן...');
+  const timeout=setTimeout(()=>{
+    hideLoader();
+    window.custs=[...window.SEED_CUSTS];
+    window.faults=[];
+    renderDash();
+    setTimeout(gcalInit,400);
+  },6000);
+
+  try{
+    const[cs,fs,ss]=await Promise.all([
+      getDocs(collection(db,'customers')),
+      getDocs(collection(db,'faults')),
+      getDocs(collection(db,'settings'))
+    ]);
+    clearTimeout(timeout);
+    const cfgDoc=ss.docs.find(d=>d.id==='main');
+    if(cfgDoc){Object.assign(window.cfg,cfgDoc.data());localStorage.setItem('crm_cfg',JSON.stringify(window.cfg));}
+    
+    const remoteCusts=cs.docs.map(d=>d.data());
+    if(remoteCusts.length===0){
+      loader('מעלה לקוחות...');
+      await Promise.all(window.SEED_CUSTS.map(c=>setDoc(doc(db,'customers',c.id),c)));
+      window.custs=[...window.SEED_CUSTS];
+    }else{
+      window.custs=remoteCusts;
+    }
+    window.faults=fs.docs.map(d=>d.data());
+    hideLoader();
+    renderDash();
+    setTimeout(gcalInit,400);
+
+    onSnapshot(collection(db,'customers'),snap=>{
+      window.custs=snap.docs.map(d=>d.data());
+      const on=p=>document.getElementById('pg-'+p).classList.contains('on');
+      if(on('customers'))renderCusts();
+      if(on('warranties'))renderWarr();
+      if(on('debts'))renderDebts();
+      renderDash();
+    });
+    onSnapshot(collection(db,'faults'),snap=>{
+      const newFaults=snap.docs.map(d=>d.data());
+      // Auto-match WhatsApp faults to customers by phone number
+      newFaults.forEach(f=>{
+        if(f.custId==='' && f.updatedBy && f.updatedBy.includes('WhatsApp:')){
+          const phone=f.updatedBy.replace('📱 WhatsApp:','').replace('WhatsApp:','').trim();
+          const matched=window.custs.find(c=>c.phone&&(
+            c.phone.replace(/\D/g,'').endsWith(phone.replace(/\D/g,'').slice(-9))||
+            phone.replace(/\D/g,'').endsWith(c.phone.replace(/\D/g,'').slice(-9))
+          ));
+          if(matched){
+            // Update fault with custId
+            setDoc(doc(db,'faults',f.id),{...f,custId:matched.id}).catch(()=>{});
+          }
+        }
+      });
+      window.faults=newFaults;
+      if(document.getElementById('pg-faults').classList.contains('on'))renderFaults();
+      renderDash();
+    });
+    onSnapshot(doc(db,'settings','main'),snap=>{
+      if(snap.exists()){Object.assign(window.cfg,snap.data());localStorage.setItem('crm_cfg',JSON.stringify(window.cfg));}
+    });
+  }catch(e){
+    clearTimeout(timeout);hideLoader();console.error(e);
+    window.custs=[...window.SEED_CUSTS];window.faults=[];
+    renderDash();setTimeout(gcalInit,400);
+    toast('עובד במצב לא מקוון','warn');
+  }
+}
+loadAll();
+
+</script>
+</body>
+</html>
