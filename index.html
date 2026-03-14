@@ -26,7 +26,7 @@ body{font-family:'Heebo',sans-serif;background:#0a0e1a;color:#f1f5f9;min-height:
 .nav-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--tx2);background:none;border:none;width:100%;text-align:right;font-family:'Heebo',sans-serif;margin-bottom:2px;transition:all .15s}
 .nav-btn:hover{background:var(--sur2);color:var(--tx)}
 .nav-btn.on{background:rgba(59,130,246,.15);color:var(--acc)}
-.main{margin-right:220px;padding:24px;min-height:100vh}
+.main{margin-right:220px;margin-left:0;padding:24px;min-height:100vh;width:calc(100% - 220px);box-sizing:border-box}
 .pg{display:none}.pg.on{display:block}
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
 .pt{font-size:22px;font-weight:800}.ps{font-size:12px;color:var(--tx3);margin-top:2px}
@@ -71,7 +71,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 .fch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
 .fdesc{font-size:13px;color:var(--tx2);margin-bottom:8px;line-height:1.5}
 .fmeta{display:flex;gap:10px;flex-wrap:wrap}.fmeta span{font-size:11px;color:var(--tx3)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .modal.open{display:flex}
 .mbox{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
 .mhd{padding:16px 20px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--sur);z-index:1}
@@ -89,7 +89,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 .mnb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--tx2);font-family:'Heebo',sans-serif;font-size:10px;cursor:pointer;padding:4px;transition:color .15s}
 .mnb.on{color:var(--acc)}
 @media(max-width:768px){
-  .sidebar{display:none}.main{margin-right:0;padding:12px 12px 76px}
+  .sidebar{display:none}.main{margin-right:0;margin-left:0;width:100%;padding:12px 12px 76px}
   #mnav{display:block}.stats{grid-template-columns:1fr 1fr;gap:8px}
   .sc{padding:12px}.sc-val{font-size:22px}.dash3{grid-template-columns:1fr}
   .modal{align-items:flex-end;padding:0}.mbox{max-width:100%;max-height:93vh;border-radius:18px 18px 0 0}
@@ -160,7 +160,6 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 <div class="pg on" id="pg-dashboard">
   <div class="ph">
     <div><div class="pt">לוח בקרה</div><div class="ps">סקירה כללית</div></div>
-    <button class="btn bp" onclick="openNewCust()">+ לקוח חדש</button>
   </div>
   <div class="stats">
     <div class="sc info"><div class="sc-lbl">סה״כ לקוחות</div><div class="sc-val" id="st-total">—</div><div class="sc-sub">במערכת</div></div>
@@ -173,6 +172,29 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="tw"><div class="panel-title">⚠️ אחריות בפתח</div><div class="panel-body" id="pan-warr"></div></div>
     <div class="tw"><div class="panel-title">💰 חובות פתוחים</div><div class="panel-body" id="pan-debts"></div></div>
     <div class="tw"><div class="panel-title">🔧 תקלות פתוחות</div><div class="panel-body" id="pan-faults"></div></div>
+  </div>
+  <div class="dash3" style="margin-top:14px">
+    <div class="tw" style="border-top:3px solid var(--acc)">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>📌 כללי</span>
+        <button onclick="nav('notes')" style="font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">כל ההערות ›</button>
+      </div>
+      <div class="panel-body" id="pan-notes-general"></div>
+    </div>
+    <div class="tw" style="border-top:3px solid var(--grn)">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🤝 פגישות</span>
+        <button onclick="nav('notes')" style="font-size:11px;color:var(--grn);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">כל ההערות ›</button>
+      </div>
+      <div class="panel-body" id="pan-notes-meeting"></div>
+    </div>
+    <div class="tw" style="border-top:3px solid var(--yel)">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>⏰ תזכורות</span>
+        <button onclick="nav('notes')" style="font-size:11px;color:var(--yel);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">כל ההערות ›</button>
+      </div>
+      <div class="panel-body" id="pan-notes-reminder"></div>
+    </div>
   </div>
   <div class="tw" style="margin-top:16px">
     <div style="padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -258,8 +280,39 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 <div id="list-faults"></div>
 </div>
 
+<div class="pg" id="pg-notes">
+  <div class="ph">
+    <div><div class="pt">📝 הערות כלליות</div><div class="ps" id="notes-sub"></div></div>
+    <button class="btn bp" onclick="openNewNote()">+ הערה חדשה</button>
+  </div>
+  <div class="toolbar">
+    <div class="sw"><input type="text" id="note-search" placeholder="חפש..." oninput="renderNotes()"><span class="si">🔍</span></div>
+    <select class="fsel" id="note-filter-cat" onchange="renderNotes()">
+      <option value="">כל הקטגוריות</option>
+      <option value="general">📌 כללי</option>
+      <option value="meeting">🤝 פגישה</option>
+      <option value="reminder">⏰ תזכורת</option>
+    </select>
+    <select class="fsel" id="note-filter-user" onchange="renderNotes()">
+      <option value="">כל המשתמשים</option>
+      <option value="רז">רז</option>
+      <option value="אופיר">אופיר</option>
+      <option value="גלאל">גלאל</option>
+      <option value="מוטי">מוטי</option>
+    </select>
+    <button class="btn bs btn-sm" id="note-select-mode-btn" onclick="toggleNoteSelectMode(true)">☑️ בחר מרובה</button>
+  </div>
+  <div id="note-bulk-bar" style="display:none;background:var(--sur2);border:1px solid var(--acc);border-radius:10px;padding:10px 16px;margin-bottom:12px;align-items:center;justify-content:space-between;gap:10px">
+    <span id="note-bulk-count" style="font-size:13px;color:var(--tx2)">0 נבחרו</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn bs btn-sm" onclick="toggleNoteSelectMode(false)">ביטול</button>
+      <button class="btn bd btn-sm" onclick="deleteSelectedNotes()">🗑️ מחק נבחרים</button>
+    </div>
+  </div>
+  <div id="list-notes" class="fg-grid"></div>
+</div>
+
 <div class="pg" id="pg-settings">
-  <div class="ph"><div class="pt">הגדרות</div></div>
   <div class="tw" style="max-width:460px;padding:22px">
     <div class="stit">פרטי החברה</div>
     <div style="margin-bottom:12px"><label class="flbl">שם החברה</label><input class="finp" id="s-company" placeholder="וידאו דיזיין"></div>
@@ -355,31 +408,6 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
       <button class="btn bp" onclick="saveFault()">💾 שמור</button>
     </div>
   </div>
-</div>
-
-<!-- ══ NOTES PAGE ══ -->
-<div class="pg" id="pg-notes">
-  <div class="ph">
-    <div><div class="pt">📝 הערות כלליות</div><div class="ps" id="notes-sub">טוען...</div></div>
-    <button class="btn bp" onclick="openNewNote()">+ הערה חדשה</button>
-  </div>
-  <div class="toolbar">
-    <div class="sw"><input id="note-search" type="text" placeholder="חיפוש הערות..." oninput="renderNotes()"><span class="si">🔍</span></div>
-    <select class="fsel" id="note-filter-cat" onchange="renderNotes()">
-      <option value="">כל הקטגוריות</option>
-      <option value="general">📌 כללי</option>
-      <option value="meeting">🤝 פגישה</option>
-      <option value="reminder">⏰ תזכורת</option>
-    </select>
-    <select class="fsel" id="note-filter-user" onchange="renderNotes()">
-      <option value="">כל המשתמשים</option>
-      <option value="רז">רז</option>
-      <option value="אופיר">אופיר</option>
-      <option value="גלאל">גלאל</option>
-      <option value="מוטי">מוטי</option>
-    </select>
-  </div>
-  <div id="list-notes" class="fg-grid"></div>
 </div>
 
 <!-- Modal: Note -->
@@ -571,6 +599,37 @@ function renderDash(){
         +`<div style="font-size:11px;color:var(--tx3)">${(f.desc||'').slice(0,40)}</div></div>`
         +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין תקלות</div>';
+
+  // Notes panels per category
+  const me = window._currentUser||'';
+  const myNotes = (window.notes||[]).filter(n=>!n.owner||n.owner===me)
+    .sort((a,b)=>(b.created||'').localeCompare(a.created||''));
+  ['general','meeting','reminder'].forEach(cat=>{
+    const panEl = document.getElementById('pan-notes-'+cat);
+    if(!panEl) return;
+    const items = myNotes.filter(n=>(n.cat||'general')===cat);
+    const clr = NCAT_CLR[cat];
+    if(!items.length){
+      panEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">אין הערות</div>';
+      return;
+    }
+    panEl.innerHTML = items.map(n=>{
+      const c = n.custId ? window.custs.find(x=>x.id===n.custId) : null;
+      const ownerU = USERS.find(u=>u.name===n.owner);
+      const ownerClr = ownerU ? ownerU.color : 'var(--tx3)';
+      return `<div class="ai" onclick="editNoteById('${n.id}')" style="border-right:3px solid ${clr}">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(n.text||'').split('\n')[0].slice(0,40)}</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
+            ${n.owner?`<span style="color:${ownerClr};font-weight:600">✏️ ${n.owner}</span>`:''}
+            ${c?`<span style="color:var(--acc)">👤 ${c.name}</span>`:''}
+            <span>${n.date?fmtD(n.date):fmtD(n.created||today())}</span>
+          </div>
+        </div>
+        <span style="color:var(--tx3)">›</span>
+      </div>`;
+    }).join('');
+  });
 }
 function jumpTo(id){nav('customers');setTimeout(()=>{if(id)viewCust(id);},100)}
 
@@ -640,13 +699,22 @@ function editCustById(id){
 function saveCust(){
   const name=document.getElementById('mc-name').value.trim();
   if(!name){toast('שם הלקוח חובה','err');return;}
+  const installDate=document.getElementById('mc-install').value;
+  const warrantyYears=document.getElementById('mc-warr').value;
+  let warrantyExpiry='';
+  if(installDate&&warrantyYears){
+    const d=new Date(installDate);
+    d.setFullYear(d.getFullYear()+parseInt(warrantyYears));
+    warrantyExpiry=d.toISOString().split('T')[0];
+  }
   const c={id:_eCust||uid(),name,
     phone:document.getElementById('mc-phone').value.trim(),
     email:document.getElementById('mc-email').value.trim(),
     city:document.getElementById('mc-city').value.trim(),
     address:document.getElementById('mc-address').value.trim(),
-    installDate:document.getElementById('mc-install').value,
-    warrantyYears:document.getElementById('mc-warr').value,
+    installDate,
+    warrantyYears,
+    warrantyExpiry,
     projectType:document.getElementById('mc-project').value.trim(),
     equipment:document.getElementById('mc-equip').value.trim(),
     techNotes:document.getElementById('mc-notes').value.trim(),
@@ -924,9 +992,55 @@ async function delFault(){
 // ══ NOTES ══
 window.notes = [];
 let _eNote = null;
+let _noteSelectMode = false;
+let _noteSelectedIds = new Set();
 
 const NCAT = {general:'📌 כללי', meeting:'🤝 פגישה', reminder:'⏰ תזכורת'};
 const NCAT_CLR = {general:'var(--acc)', meeting:'var(--grn)', reminder:'var(--yel)'};
+
+function toggleNoteSelectMode(on){
+  _noteSelectMode = on;
+  _noteSelectedIds.clear();
+  const pg = document.getElementById('pg-notes');
+  const bar = document.getElementById('note-bulk-bar');
+  const btn = document.getElementById('note-select-mode-btn');
+  if(on){
+    pg.classList.add('select-mode');
+    btn.style.display = 'none';
+    bar.style.display = 'flex';
+  } else {
+    pg.classList.remove('select-mode');
+    btn.style.display = '';
+    bar.style.display = 'none';
+  }
+  document.getElementById('note-bulk-count').textContent = '0 נבחרו';
+  renderNotes();
+}
+
+function toggleNoteSelect(id, el){
+  if(_noteSelectedIds.has(id)){
+    _noteSelectedIds.delete(id);
+    el.closest('.fc').classList.remove('selected');
+  } else {
+    _noteSelectedIds.add(id);
+    el.closest('.fc').classList.add('selected');
+  }
+  const count = _noteSelectedIds.size;
+  document.getElementById('note-bulk-count').textContent = count + ' נבחרו';
+}
+
+async function deleteSelectedNotes(){
+  if(_noteSelectedIds.size===0) return;
+  if(!confirm('למחוק ' + _noteSelectedIds.size + ' הערות?')) return;
+  const ids = [..._noteSelectedIds];
+  toast('מוחק ' + ids.length + ' הערות...');
+  const ok = window._dbDelMulti ? await window._dbDelMulti('notes', ids) : true;
+  if(!ok){ toast('שגיאה במחיקה','err'); return; }
+  window.notes = window.notes.filter(n=>!ids.includes(n.id));
+  toggleNoteSelectMode(false);
+  renderNotes(); renderDash();
+  toast(ids.length + ' הערות נמחקו ✅');
+}
 
 function renderNotes(){
   const q = (document.getElementById('note-search')||{}).value||'';
@@ -934,13 +1048,10 @@ function renderNotes(){
   const userF = (document.getElementById('note-filter-user')||{}).value||'';
   const me = window._currentUser||'';
 
-  // Only show notes by this user OR notes with no owner (legacy)
   let list = window.notes.filter(n => !n.owner || n.owner === me);
-
   if(q) list = list.filter(n=>(n.text||'').includes(q)||(n.custName||'').includes(q));
   if(catF) list = list.filter(n=>(n.cat||'general')===catF);
   if(userF) list = list.filter(n=>n.owner===userF);
-
   list = list.sort((a,b)=>(b.created||'').localeCompare(a.created||''));
 
   const sub = document.getElementById('notes-sub');
@@ -948,23 +1059,31 @@ function renderNotes(){
 
   const el = document.getElementById('list-notes');
   if(!el) return;
+
   if(!list.length){
-    el.innerHTML='<div style="text-align:center;padding:60px;color:var(--tx3)">📝<br><br>אין הערות עדיין<br><span style="font-size:12px">לחץ על "+ הערה חדשה"</span></div>';
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--tx3);font-size:14px">📝<br><br>אין הערות עדיין<br><span style="font-size:12px">לחץ על "+ הערה חדשה" כדי להוסיף</span></div>';
     return;
   }
+
   el.innerHTML = list.map(n=>{
     const c = n.custId ? window.custs.find(x=>x.id===n.custId) : null;
     const clr = NCAT_CLR[n.cat||'general'];
     const lbl = NCAT[n.cat||'general'];
-    return `<div class="fc" onclick="editNoteById('${n.id}')" style="border-right:3px solid ${clr}">
-      <div class="fch">
-        <span class="badge" style="background:${clr}22;color:${clr};font-size:11px">${lbl}</span>
-        <span style="font-size:11px;color:var(--tx3)">${n.date?fmtD(n.date)+(n.time?' '+n.time:''):fmtD(n.created||today())}</span>
+    const dateStr = n.date ? fmtD(n.date)+(n.time?' '+n.time:'') : fmtD(n.created||today());
+    const ownerU = USERS.find(u=>u.name===n.owner);
+    const ownerClr = ownerU ? ownerU.color : 'var(--tx3)';
+    const cbHtml = _noteSelectMode ? `<input type="checkbox" class="fc-cb" onclick="event.stopPropagation();toggleNoteSelect('${n.id}',this)" ${_noteSelectedIds.has(n.id)?'checked':''}>` : '';
+    const fcClick = _noteSelectMode ? `toggleNoteSelect('${n.id}',this.querySelector('.fc-cb'))` : `editNoteById('${n.id}')`;
+    return `<div class="fc ${_noteSelectMode&&_noteSelectedIds.has(n.id)?'selected':''}" onclick="${fcClick}" style="border-right:3px solid ${clr};position:relative">
+      ${cbHtml}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:${clr}22;color:${clr}">${lbl}</span>
+        <span style="font-size:11px;color:var(--tx3)">${dateStr}</span>
       </div>
-      <div class="fdesc" style="margin-top:6px;white-space:pre-wrap">${n.text||''}</div>
-      <div class="fmeta" style="margin-top:8px">
-        ${c?`<span style="color:var(--acc)">👤 ${c.name}</span>`:''}
-        <span style="color:var(--tx3)">✏️ ${n.owner||'לא ידוע'}</span>
+      <div style="font-size:13px;color:var(--tx);line-height:1.6;white-space:pre-wrap;margin-bottom:8px">${(n.text||'').slice(0,200)}${(n.text||'').length>200?'...':''}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <span style="font-size:11px;color:${ownerClr};font-weight:600">✏️ ${n.owner||'לא ידוע'}</span>
+        ${c?`<span style="font-size:11px;color:var(--acc)">👤 ${c.name}</span>`:''}
       </div>
     </div>`;
   }).join('');
