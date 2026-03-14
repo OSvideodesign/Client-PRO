@@ -1089,18 +1089,22 @@ async function loadAll(){
 
     onSnapshot(collection(db,'faults'),snap=>{
       window.faults=snap.docs.map(d=>d.data());
-      // Auto-match WhatsApp faults to customers by phone
-      window.faults.forEach(f=>{
-        if(!f.custId && f.updatedBy && f.updatedBy.includes('WhatsApp')){
-          const phone=(f.updatedBy.match(/\d{9,}/)||[''])[0];
-          if(phone){
+      // Auto-match WhatsApp faults — only once per fault (not in loop)
+      const unmatched=window.faults.filter(f=>!f.custId&&f.updatedBy&&f.updatedBy.includes('WhatsApp'));
+      if(unmatched.length>0){
+        setTimeout(()=>{
+          unmatched.forEach(f=>{
+            const phone=(f.updatedBy.match(/\d{9,}/)||[''])[0];
+            if(!phone) return;
             const matched=window.custs.find(c=>c.phone&&c.phone.replace(/\D/g,'').includes(phone.slice(-9)));
             if(matched){
-              setDoc(doc(db,'faults',f.id),{...f,custId:matched.id}).catch(()=>{});
+              // Update locally first to prevent re-matching
+              f.custId=matched.id;
+              setDoc(doc(db,'faults',f.id),{...f}).catch(()=>{});
             }
-          }
-        }
-      });
+          });
+        },1500);
+      }
       if(document.getElementById('pg-faults').classList.contains('on'))renderFaults();
       renderDash();
     });
