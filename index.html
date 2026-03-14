@@ -636,14 +636,10 @@ function saveCust(){
 async function delCust(){
   if(!confirm('למחוק לקוח זה?'))return;
   const id=_eCust;
-  // מחק מ-Firebase קודם
-  if(window._dbDel){
-    const ok = await window._dbDel('customers', id);
-    if(!ok){ toast('שגיאה במחיקה','err'); return; }
-  }
   window.custs=window.custs.filter(x=>x.id!==id);
   closeM('M-cust');renderCusts();renderDash();
-  toast('לקוח נמחק ✅');
+  const ok = await (window._dbDel ? window._dbDel('customers',id) : Promise.resolve(true));
+  toast(ok ? 'לקוח נמחק' : 'שגיאה במחיקה','err');
 }
 function viewCust(id){
   const c=window.custs.find(x=>x.id===id);if(!c)return;
@@ -671,17 +667,9 @@ function viewCust(id){
   }
   document.getElementById('Mv-del').onclick=()=>{
     if(!confirm('למחוק?'))return;
-    if(window._dbDel){
-      window._dbDel('customers',id).then(ok=>{
-        if(!ok){toast('שגיאה במחיקה','err');return;}
-        window.custs=window.custs.filter(x=>x.id!==id);
-        closeM('M-view');renderCusts();renderDash();
-        toast('לקוח נמחק ✅');
-      });
-    } else {
-      window.custs=window.custs.filter(x=>x.id!==id);
-      closeM('M-view');renderCusts();renderDash();
-    }
+    window.custs=window.custs.filter(x=>x.id!==id);
+    closeM('M-view');renderCusts();renderDash();
+    (window._dbDel?window._dbDel('customers',id):Promise.resolve()).then(()=>toast('לקוח נמחק'));
   };
   document.getElementById('Mv-edit').onclick=()=>{closeM('M-view');editCustId(id)};
   document.getElementById('Mv-fault').onclick=()=>{closeM('M-view');openNewFault(id)};
@@ -844,13 +832,15 @@ function saveFault(){
 async function delFault(){
   if(!confirm('למחוק תקלה זו?'))return;
   const id=_eFault;
-  // מחק מ-Firebase קודם, אחר כך עדכן UI
+  closeM('M-fault');
+  // 1. מחק מ-Firebase קודם ורק אחר כך עדכן UI
   if(window._dbDel){
     const ok = await window._dbDel('faults', id);
-    if(!ok){ toast('שגיאה במחיקה','err'); return; }
+    if(!ok){ toast('שגיאה במחיקה — נסה שוב','err'); return; }
   }
-  window.faults=window.faults.filter(x=>x.id!==id);
-  closeM('M-fault');renderFaults();renderDash();
+  // 2. רק אחרי אישור Firebase — עדכן מסך
+  window.faults = window.faults.filter(x=>x.id!==id);
+  renderFaults(); renderDash();
   toast('תקלה נמחקה ✅');
 }
 
