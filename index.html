@@ -797,12 +797,21 @@ function toggleSelectMode(on){
   _selectMode = on;
   _selectedIds.clear();
   const pg = document.getElementById('pg-faults');
+  const btn = document.getElementById('select-mode-btn');
   if(on){
     pg.classList.add('select-mode');
-    document.getElementById('select-mode-btn').style.display='none';
+    btn.textContent='✕ בטל בחירה';
+    btn.onclick=()=>toggleSelectMode(false);
+    btn.style.background='rgba(239,68,68,.15)';
+    btn.style.color='var(--red)';
+    btn.style.border='1px solid rgba(239,68,68,.3)';
   } else {
     pg.classList.remove('select-mode');
-    document.getElementById('select-mode-btn').style.display='';
+    btn.textContent='☑️ בחר מרובה';
+    btn.onclick=()=>toggleSelectMode(true);
+    btn.style.background='';
+    btn.style.color='';
+    btn.style.border='';
     document.getElementById('bulk-bar').classList.remove('show');
   }
   renderFaults();
@@ -1016,27 +1025,31 @@ window._dbSaveCfg=async(cfg)=>{
   try{await setDoc(doc(db,'settings','main'),cfg);}catch(e){console.error('saveCfg:',e);}
   localStorage.setItem('crm_cfg',JSON.stringify(cfg));
 };
+// Track IDs being deleted so onSnapshot ignores them
+window._deletingIds = new Set();
+
 window._dbDel=async(col,id)=>{
+  window._deletingIds.add(col+':'+id);
   try{
-    window._deletingIds = window._deletingIds||new Set();
-    window._deletingIds.add(col+':'+id);
     await deleteDoc(doc(db,col,id));
+    console.log('✅ Deleted from Firebase:',col,id);
     return true;
   }catch(e){
-    console.error('Delete error:',e);
-    window._deletingIds&&window._deletingIds.delete(col+':'+id);
+    console.error('❌ Delete failed:',col,id,e.code,e.message);
+    window._deletingIds.delete(col+':'+id);
     return false;
   }
 };
+
 window._dbDelMulti=async(col,ids)=>{
+  ids.forEach(id=>window._deletingIds.add(col+':'+id));
   try{
-    window._deletingIds = window._deletingIds||new Set();
-    ids.forEach(id=>window._deletingIds.add(col+':'+id));
     await Promise.all(ids.map(id=>deleteDoc(doc(db,col,id))));
+    console.log('✅ Deleted multi from Firebase:',col,ids);
     return true;
   }catch(e){
-    console.error('DeleteMulti error:',e);
-    ids.forEach(id=>window._deletingIds&&window._deletingIds.delete(col+':'+id));
+    console.error('❌ DeleteMulti failed:',col,ids,e.code,e.message);
+    ids.forEach(id=>window._deletingIds.delete(col+':'+id));
     return false;
   }
 };
@@ -1088,7 +1101,8 @@ async function loadAll(){
     });
 
     onSnapshot(collection(db,'faults'),snap=>{
-      window.faults=snap.docs.map(d=>d.data());
+      const deleting=window._deletingIds||new Set();
+      window.faults=snap.docs.map(d=>d.data()).filter(f=>!deleting.has('faults:'+f.id));
       // Auto-match WhatsApp faults — only once per fault (not in loop)
       const unmatched=window.faults.filter(f=>!f.custId&&f.updatedBy&&f.updatedBy.includes('WhatsApp'));
       if(unmatched.length>0){
