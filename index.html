@@ -98,6 +98,12 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 }
 @media(min-width:769px){#mnav{display:none!important}}
 @keyframes spin{to{transform:rotate(360deg)}}
+.fc-cb{position:absolute;top:10px;left:10px;width:20px;height:20px;cursor:pointer;accent-color:var(--acc);display:none}
+.select-mode .fc-cb{display:block}
+.select-mode .fc{position:relative;padding-right:14px}
+.select-mode .fc.selected{border-color:var(--acc);background:rgba(59,130,246,.08)}
+#bulk-bar{display:none;position:sticky;bottom:76px;left:0;right:0;background:var(--sur2);border:1px solid var(--acc);border-radius:10px;padding:10px 16px;margin:12px 0;align-items:center;justify-content:space-between;gap:10px;z-index:50}
+#bulk-bar.show{display:flex}
 </style>
 </head>
 <body>
@@ -238,8 +244,16 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
       <option value="">כל הסטטוסים</option><option value="open">פתוחה</option>
       <option value="scheduled">נקבע תאריך</option><option value="done">טופלה</option>
     </select>
+    <button class="btn bs btn-sm" id="select-mode-btn" onclick="toggleSelectMode(true)">☑️ בחר מרובה</button>
   </div>
-  <div id="list-faults"></div>
+  <div id="bulk-bar">
+  <span id="bulk-count" style="font-size:13px;color:var(--tx2)">0 נבחרו</span>
+  <div style="display:flex;gap:8px">
+    <button class="btn bs btn-sm" onclick="toggleSelectMode(false)">ביטול</button>
+    <button class="btn bd btn-sm" onclick="deleteSelected()">🗑️ מחק נבחרים</button>
+  </div>
+</div>
+<div id="list-faults"></div>
 </div>
 
 <div class="pg" id="pg-settings">
@@ -689,7 +703,9 @@ function renderFaults(){
   const uColor=name=>{const u=USERS.find(x=>x.name===name);return u?u.color:'var(--tx2)';};
   el.innerHTML='<div class="fg-grid">'+list.map(f=>{
     const c=window.custs.find(x=>x.id===f.custId);
-    return`<div class="fc" onclick="editFaultById('${f.id}')">`
+    const cbHtml=_selectMode?`<input type="checkbox" class="fc-cb" onclick="event.stopPropagation();toggleSelect('${f.id}',this)">`:'';
+    const fcClick=_selectMode?`toggleSelect('${f.id}',this.querySelector('.fc-cb'))`:`editFaultById('${f.id}')`;
+    return`<div class="fc ${_selectMode&&_selectedIds.has(f.id)?'selected':''}" onclick="${fcClick}">${cbHtml}`
       +`<div class="fch"><div class="ci">`
       +`<div class="av" style="background:${avClr(c?c.name:'?')};width:28px;height:28px;font-size:10px">${ini(c?c.name:'?')}</div>`
       +`<div><div style="font-weight:700;font-size:13px">${c?c.name:'לא ידוע'}</div>`
@@ -773,6 +789,52 @@ function saveFault(){
     setTimeout(()=>{if(confirm('לפתוח Google Calendar?'))gcalFault(f.id);},400);
   }
 }
+// ══ BULK DELETE ══
+let _selectMode = false;
+let _selectedIds = new Set();
+
+function toggleSelectMode(on){
+  _selectMode = on;
+  _selectedIds.clear();
+  const pg = document.getElementById('pg-faults');
+  if(on){
+    pg.classList.add('select-mode');
+    document.getElementById('select-mode-btn').style.display='none';
+  } else {
+    pg.classList.remove('select-mode');
+    document.getElementById('select-mode-btn').style.display='';
+    document.getElementById('bulk-bar').classList.remove('show');
+  }
+  renderFaults();
+}
+
+function toggleSelect(id, el){
+  if(_selectedIds.has(id)){
+    _selectedIds.delete(id);
+    el.closest('.fc').classList.remove('selected');
+  } else {
+    _selectedIds.add(id);
+    el.closest('.fc').classList.add('selected');
+  }
+  const count = _selectedIds.size;
+  document.getElementById('bulk-count').textContent = count + ' נבחרו';
+  if(count>0) document.getElementById('bulk-bar').classList.add('show');
+  else document.getElementById('bulk-bar').classList.remove('show');
+}
+
+async function deleteSelected(){
+  if(_selectedIds.size===0) return;
+  if(!confirm('למחוק ' + _selectedIds.size + ' תקלות?')) return;
+  const ids = [..._selectedIds];
+  toast('מוחק ' + ids.length + ' תקלות...');
+  const ok = window._dbDelMulti ? await window._dbDelMulti('faults', ids) : true;
+  if(!ok){ toast('שגיאה במחיקה','err'); return; }
+  window.faults = window.faults.filter(f=>!ids.includes(f.id));
+  toggleSelectMode(false);
+  renderFaults(); renderDash();
+  toast(ids.length + ' תקלות נמחקו ✅');
+}
+
 async function delFault(){
   if(!confirm('למחוק תקלה זו?'))return;
   const id=_eFault;
@@ -956,12 +1018,25 @@ window._dbSaveCfg=async(cfg)=>{
 };
 window._dbDel=async(col,id)=>{
   try{
-    console.log('Deleting',col,id);
+    window._deletingIds = window._deletingIds||new Set();
+    window._deletingIds.add(col+':'+id);
     await deleteDoc(doc(db,col,id));
-    console.log('Deleted OK',col,id);
     return true;
   }catch(e){
     console.error('Delete error:',e);
+    window._deletingIds&&window._deletingIds.delete(col+':'+id);
+    return false;
+  }
+};
+window._dbDelMulti=async(col,ids)=>{
+  try{
+    window._deletingIds = window._deletingIds||new Set();
+    ids.forEach(id=>window._deletingIds.add(col+':'+id));
+    await Promise.all(ids.map(id=>deleteDoc(doc(db,col,id))));
+    return true;
+  }catch(e){
+    console.error('DeleteMulti error:',e);
+    ids.forEach(id=>window._deletingIds&&window._deletingIds.delete(col+':'+id));
     return false;
   }
 };
@@ -1003,7 +1078,8 @@ async function loadAll(){
 
     // ══ REAL-TIME LISTENERS ══
     onSnapshot(collection(db,'customers'),snap=>{
-      window.custs=snap.docs.map(d=>d.data());
+      const deleting=window._deletingIds||new Set();
+      window.custs=snap.docs.map(d=>d.data()).filter(c=>!deleting.has('customers:'+c.id));
       const on=p=>document.getElementById('pg-'+p).classList.contains('on');
       if(on('customers'))renderCusts();
       if(on('warranties'))renderWarr();
