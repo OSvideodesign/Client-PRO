@@ -361,6 +361,11 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
       <div><label class="flbl">חוב (₪)</label><input class="finp" id="mc-debt" type="number" value="0"></div>
       <div class="fg1"><label class="flbl">הערות חוב</label><input class="finp" id="mc-debt-desc"></div>
       <div class="fg1"><label class="flbl">הערות טכנאי</label><textarea class="finp" id="mc-notes" rows="3"></textarea></div>
+      <div class="fg1">
+        <div class="stit" style="margin-top:4px">👥 אנשי קשר נוספים</div>
+        <div id="mc-contacts-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+        <button type="button" class="btn bs btn-sm" onclick="addContactRow()">+ הוסף איש קשר</button>
+      </div>
     </div></div>
     <div class="mft">
       <button class="btn bd btn-sm" id="mc-del" style="display:none;margin-left:auto" onclick="delCust()">🗑️ מחק</button>
@@ -733,6 +738,7 @@ function openNewCust(){
   document.getElementById('mc-install').value='';
   document.getElementById('mc-warr').value='2';
   document.getElementById('mc-debt').value='0';
+  document.getElementById('mc-contacts-list').innerHTML='';
   openM('M-cust');
 }
 function editCustById(id){
@@ -752,6 +758,9 @@ function editCustById(id){
   document.getElementById('mc-debt').value=c.debt||0;
   document.getElementById('mc-debt-desc').value=c.debtDesc||'';
   document.getElementById('mc-notes').value=c.techNotes||'';
+  // Load contacts
+  document.getElementById('mc-contacts-list').innerHTML='';
+  (c.contacts||[]).forEach(ct=>addContactRow(ct));
   openM('M-cust');
 }
 function saveCust(){
@@ -778,12 +787,32 @@ function saveCust(){
     techNotes:document.getElementById('mc-notes').value.trim(),
     debt:parseFloat(document.getElementById('mc-debt').value)||0,
     debtDesc:document.getElementById('mc-debt-desc').value.trim(),
+    contacts:[...document.querySelectorAll('#mc-contacts-list .contact-row')].map(row=>({
+      name:row.querySelector('.ct-name').value.trim(),
+      phone:row.querySelector('.ct-phone').value.trim(),
+      email:row.querySelector('.ct-email').value.trim(),
+      role:row.querySelector('.ct-role').value.trim()
+    })).filter(ct=>ct.name||ct.phone),
     createdAt:_eCust?(window.custs.find(x=>x.id===_eCust)||{}).createdAt:today()
   };
   if(_eCust)window.custs=window.custs.map(x=>x.id===_eCust?c:x);else window.custs.push(c);
   if(window._dbSaveCusts)window._dbSaveCusts(window.custs);
   closeM('M-cust');renderCusts();renderDash();
   toast(_eCust?'לקוח עודכן ✅':'לקוח נוסף ✅');
+}
+
+function addContactRow(ct){
+  const row=document.createElement('div');
+  row.className='contact-row';
+  row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:4px';
+  row.innerHTML=`
+    <input class="finp ct-name" placeholder="שם" value="${(ct&&ct.name)||''}">
+    <input class="finp ct-phone" placeholder="טלפון" type="tel" value="${(ct&&ct.phone)||''}">
+    <input class="finp ct-email" placeholder="מייל" type="email" value="${(ct&&ct.email)||''}">
+    <input class="finp ct-role" placeholder="תפקיד" value="${(ct&&ct.role)||''}">
+    <button type="button" onclick="this.closest('.contact-row').remove()" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0 4px">✕</button>
+  `;
+  document.getElementById('mc-contacts-list').appendChild(row);
 }
 async function delCust(){
   if(!confirm('למחוק לקוח זה?'))return;
@@ -814,6 +843,19 @@ function viewCust(id){
       ${c.equipment?`<div style="grid-column:1/-1"><div class="flbl">ציוד</div><div>${c.equipment}</div></div>`:''}
       ${c.debt>0?`<div style="grid-column:1/-1"><div class="flbl">חוב</div><div style="color:var(--red);font-weight:700">₪${parseFloat(c.debt).toLocaleString('he-IL')} ${c.debtDesc?' — '+c.debtDesc:''}</div></div>`:''}
       ${c.techNotes?`<div style="grid-column:1/-1"><div class="flbl">הערות</div><div style="color:var(--tx2)">${c.techNotes}</div></div>`:''}
+      ${(c.contacts&&c.contacts.length)?`<div style="grid-column:1/-1">
+        <div class="flbl" style="margin-bottom:8px">👥 אנשי קשר נוספים</div>
+        ${c.contacts.map(ct=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:var(--sur2);border-radius:8px;margin-bottom:6px">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px">${ct.name||''}${ct.role?` <span style="font-size:11px;color:var(--tx3);font-weight:400">— ${ct.role}</span>`:''}</div>
+              <div style="display:flex;gap:12px;margin-top:3px;flex-wrap:wrap">
+                ${ct.phone?`<a href="tel:${ct.phone}" style="color:var(--acc);font-size:12px">📞 ${ct.phone}</a>`:''}
+                ${ct.email?`<a href="mailto:${ct.email}" style="color:var(--cya);font-size:12px">✉️ ${ct.email}</a>`:''}
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`:''}
     </div>`;
   document.getElementById('Mv-del').onclick=async()=>{
     if(!confirm('למחוק?'))return;
