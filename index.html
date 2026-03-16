@@ -595,7 +595,6 @@ function applyUser(u){
   document.getElementById('login-screen').style.display='none';
   const b=document.getElementById('user-badge');
   if(b){b.textContent=u.name;b.style.background=u.color+'22';b.style.color=u.color;b.style.border='1px solid '+u.color+'44';}
-  document.documentElement.style.setProperty('--acc',u.color);
 }
 function backToUsers(){
   _loginTarget=null;
@@ -660,9 +659,8 @@ function renderDash(){
         +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין משימות</div>';
 
-  // Notes panels per category
-  const me = window._currentUser||'';
-  const myNotes = (window.notes||[]).filter(n=>!n.owner||n.owner===me)
+  // Notes panels per category — show all notes in dashboard
+  const myNotes = (window.notes||[])
     .sort((a,b)=>(b.created||'').localeCompare(a.created||''));
   ['general','meeting','reminder'].forEach(cat=>{
     const panEl = document.getElementById('pan-notes-'+cat);
@@ -1336,8 +1334,10 @@ function moveWaToFault(id){
   document.getElementById('mf-amount').value='';
   document.getElementById('mf-paid').value='no';
   document.getElementById('mf-notes').value='';
-  // mark WA as done after moving
-  setWaStatus(id,'done');
+  // מחק מ-WhatsApp אחרי העברה למשימה
+  if(window._dbDel) window._dbDel('whatsapp', id).catch(()=>{});
+  window.waMessages = window.waMessages.filter(x=>x.id!==id);
+  renderWhatsapp();
   openM('M-fault');
 }
 
