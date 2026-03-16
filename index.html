@@ -127,8 +127,8 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 <div id="mnav"><div class="mns">
   <button class="mnb" onclick="nav('dashboard')"><span style="font-size:20px">🏠</span>ראשי</button>
   <button class="mnb" onclick="nav('customers')"><span style="font-size:20px">👥</span>לקוחות</button>
-  <button class="mnb" onclick="nav('faults')"><span style="font-size:20px">🔧</span>תקלות</button>
-  <button class="mnb" onclick="nav('warranties')"><span style="font-size:20px">🛡️</span>אחריות</button>
+  <button class="mnb" onclick="nav('faults')"><span style="font-size:20px">🔧</span>משימות</button>
+  <button class="mnb" onclick="nav('whatsapp')"><span style="font-size:20px">💬</span>WhatsApp</button>
   <button class="mnb" onclick="nav('notes')"><span style="font-size:20px">📝</span>הערות</button>
   <button class="mnb" onclick="nav('settings')"><span style="font-size:20px">⚙️</span>הגדרות</button>
 </div></div>
@@ -144,7 +144,8 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="nav-sec">ניהול</div>
     <button class="nav-btn on" id="nb-dashboard" onclick="nav('dashboard')">📊 לוח בקרה</button>
     <button class="nav-btn" id="nb-customers" onclick="nav('customers')">👥 לקוחות</button>
-    <button class="nav-btn" id="nb-faults" onclick="nav('faults')">🔧 תקלות</button>
+    <button class="nav-btn" id="nb-faults" onclick="nav('faults')">🔧 משימות</button>
+    <button class="nav-btn" id="nb-whatsapp" onclick="nav('whatsapp')">💬 WhatsApp</button>
     <div class="nav-sec">דוחות</div>
     <button class="nav-btn" id="nb-warranties" onclick="nav('warranties')">🛡️ אחריות</button>
     <button class="nav-btn" id="nb-debts" onclick="nav('debts')">💰 חובות</button>
@@ -166,12 +167,12 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="sc warn"><div class="sc-lbl">אחריות פגה/בקרוב</div><div class="sc-val" id="st-warr">—</div><div class="sc-sub">⚠️ דורש טיפול</div></div>
     <div class="sc danger"><div class="sc-lbl">לקוחות עם חוב</div><div class="sc-val" id="st-debts">—</div><div class="sc-sub">חובות פתוחים</div></div>
     <div class="sc success"><div class="sc-lbl">סה״כ חוב</div><div class="sc-val" id="st-debt-sum">—</div><div class="sc-sub">₪ לגבייה</div></div>
-    <div class="sc orange"><div class="sc-lbl">תקלות פתוחות</div><div class="sc-val" id="st-faults">—</div><div class="sc-sub">🔧 ממתינות</div></div>
+    <div class="sc orange"><div class="sc-lbl">משימות פתוחות</div><div class="sc-val" id="st-faults">—</div><div class="sc-sub">🔧 ממתינות</div></div>
   </div>
   <div class="dash3">
     <div class="tw"><div class="panel-title">⚠️ אחריות בפתח</div><div class="panel-body" id="pan-warr"></div></div>
     <div class="tw"><div class="panel-title">💰 חובות פתוחים</div><div class="panel-body" id="pan-debts"></div></div>
-    <div class="tw"><div class="panel-title">🔧 תקלות פתוחות</div><div class="panel-body" id="pan-faults"></div></div>
+    <div class="tw"><div class="panel-title">🔧 משימות פתוחות</div><div class="panel-body" id="pan-faults"></div></div>
   </div>
   <div class="dash3" style="margin-top:14px">
     <div class="tw" style="border-top:3px solid var(--acc)">
@@ -259,8 +260,8 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 
 <div class="pg" id="pg-faults">
   <div class="ph">
-    <div><div class="pt">תקלות</div><div class="ps" id="cnt-faults"></div></div>
-    <button class="btn bp" onclick="openNewFault(null)">+ תקלה חדשה</button>
+    <div><div class="pt">משימות</div><div class="ps" id="cnt-faults"></div></div>
+    <button class="btn bp" onclick="openNewFault(null)">+ משימה חדשה</button>
   </div>
   <div class="toolbar">
     <div class="sw"><input type="text" id="q-faults" placeholder="חפש..." oninput="renderFaults()"><span class="si">🔍</span></div>
@@ -312,6 +313,22 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
   <div id="list-notes" class="fg-grid"></div>
 </div>
 
+<div class="pg" id="pg-whatsapp">
+  <div class="ph">
+    <div><div class="pt">💬 WhatsApp</div><div class="ps" id="cnt-whatsapp"></div></div>
+  </div>
+  <div class="toolbar">
+    <div class="sw"><input type="text" id="q-whatsapp" placeholder="חפש..." oninput="renderWhatsapp()"><span class="si">🔍</span></div>
+    <select class="fsel" id="f-whatsapp-status" onchange="renderWhatsapp()">
+      <option value="">כל הסטטוסים</option>
+      <option value="new">חדש</option>
+      <option value="read">נקרא</option>
+      <option value="done">טופל</option>
+    </select>
+  </div>
+  <div id="list-whatsapp" class="fg-grid"></div>
+</div>
+
 <div class="pg" id="pg-settings">
   <div class="tw" style="max-width:460px;padding:22px">
     <div class="stit">פרטי החברה</div>
@@ -361,7 +378,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="mft">
       <button class="btn bd btn-sm" id="Mv-del" style="margin-left:auto">🗑️ מחק</button>
       <button class="btn bs btn-sm" id="Mv-edit">✏️ ערוך</button>
-      <button class="btn bp btn-sm" id="Mv-fault">🔧 תקלה חדשה</button>
+      <button class="btn bp btn-sm" id="Mv-fault">🔧 משימה חדשה</button>
     </div>
   </div>
 </div>
@@ -369,11 +386,11 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 <!-- FAULT MODAL -->
 <div class="modal" id="M-fault">
   <div class="mbox">
-    <div class="mhd"><h2 id="M-fault-title">תקלה חדשה</h2><button class="btn bs btn-sm" onclick="closeM('M-fault')">✕</button></div>
+    <div class="mhd"><h2 id="M-fault-title">משימה חדשה</h2><button class="btn bs btn-sm" onclick="closeM('M-fault')">✕</button></div>
     <div class="mbody"><div class="fgrid">
       <div class="fg1"><label class="flbl">סוג קריאה *</label>
         <select class="finp" id="mf-type">
-          <option value="fault">🔧 תקלה</option>
+          <option value="fault">🔧 משימה</option>
           <option value="service">🛠️ שירות</option>
           <option value="installation">📦 המשך התקנה</option>
           <option value="other">📋 אחר</option>
@@ -467,9 +484,9 @@ window.cfg = {};
 let _eCust=null, _eFault=null;
 
 const USERS=[
-  {"name":"רז",  "pass":"Raz4123",  "color":"#3b82f6","role":"admin"},
-  {"name":"אופיר","pass":"ophir4123","color":"#10b981","role":"tech"},
-  {"name":"גלאל","pass":"Jalal4123","color":"#f59e0b","role":"tech"},
+  {"name":"אופיר","pass":"ophir4123","color":"#3b82f6","role":"admin"},
+  {"name":"רז",  "pass":"Raz4123",  "color":"#f1f5f9","role":"admin"},
+  {"name":"גלאל","pass":"Jalal4123","color":"#10b981","role":"tech"},
   {"name":"מוטי","pass":"Moti4123", "color":"#06b6d4","role":"tech"}
 ];
 window._currentUser=null;
@@ -516,6 +533,12 @@ function initLogin(){
 }
 function selectUser(name){
   _loginTarget=USERS.find(u=>u.name===name);
+  // אופיר — כניסה ישירה ללא סיסמה
+  if(name==='אופיר'){
+    applyUser(_loginTarget);
+    sessionStorage.setItem('crm_user',JSON.stringify(_loginTarget));
+    return;
+  }
   document.getElementById('pass-label').textContent='שלום '+name+', הכנס סיסמה:';
   document.getElementById('pass-area').style.display='block';
   document.getElementById('user-btns').style.display='none';
@@ -556,7 +579,7 @@ function nav(page){
   pg.classList.add('on');
   const nb=document.getElementById('nb-'+page);if(nb)nb.classList.add('on');
   document.querySelectorAll('.mnb').forEach(b=>{if(b.getAttribute('onclick')==="nav('"+page+"')")b.classList.add('on');});
-  const R={dashboard:renderDash,customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,settings:loadSettings,notes:renderNotes};
+  const R={dashboard:renderDash,customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,settings:loadSettings,notes:renderNotes,whatsapp:renderWhatsapp};
   if(R[page])R[page]();
 }
 function openM(id){document.getElementById(id).classList.add('open')}
@@ -598,7 +621,7 @@ function renderDash(){
         +`<span>🔧</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${c?c.name:'לא ידוע'}</div>`
         +`<div style="font-size:11px;color:var(--tx3)">${(f.desc||'').slice(0,40)}</div></div>`
         +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
-    :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין תקלות</div>';
+    :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין משימות</div>';
 
   // Notes panels per category
   const me = window._currentUser||'';
@@ -822,7 +845,7 @@ function markPaid(id){
 function renderFaults(){
   const q=(document.getElementById('q-faults').value||'').toLowerCase();
   const sf=document.getElementById('f-fstatus').value;
-  const TMAP={fault:'🔧 תקלה',service:'🛠️ שירות',installation:'📦 המשך התקנה',other:'📋 אחר'};
+  const TMAP={fault:'🔧 משימה',service:'🛠️ שירות',installation:'📦 המשך התקנה',other:'📋 אחר'};
   const PMAP={urgent:'🚨 דחוף',high:'🔴 גבוהה',medium:'🟡 בינונית',low:'🟢 נמוכה'};
   const SMAP={open:'br',scheduled:'bb',done:'bg'};
   const SLBL={open:'🔴 פתוחה',scheduled:'📅 נקבע תאריך',done:'✅ טופלה'};
@@ -837,9 +860,9 @@ function renderFaults(){
     const o={urgent:0,high:1,medium:2,low:3};
     return(o[a.priority]||2)-(o[b.priority]||2);
   });
-  document.getElementById('cnt-faults').textContent=list.length+' תקלות';
+  document.getElementById('cnt-faults').textContent=list.length+' משימות';
   const el=document.getElementById('list-faults');
-  if(!list.length){el.innerHTML='<div style="text-align:center;padding:50px;color:var(--tx3)">🔧<br><br>אין תקלות</div>';return;}
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:50px;color:var(--tx3)">🔧<br><br>אין משימות</div>';return;}
   const uColor=name=>{const u=USERS.find(x=>x.name===name);return u?u.color:'var(--tx2)';};
   el.innerHTML='<div class="fg-grid">'+list.map(f=>{
     const c=window.custs.find(x=>x.id===f.custId);
@@ -854,7 +877,7 @@ function renderFaults(){
       +`<span class="badge ${SMAP[f.status||'open']}">${SLBL[f.status||'open']}</span>`
       +`${f.date?`<button class="btn bs btn-sm" onclick="event.stopPropagation();gcalFault('${f.id}')">📅</button>`:''}`
       +`</div></div>`
-      +`<div style="font-size:11px;color:var(--tx3);margin-bottom:4px">${TMAP[f.type||'fault']||'🔧 תקלה'}`
+      +`<div style="font-size:11px;color:var(--tx3);margin-bottom:4px">${TMAP[f.type||'fault']||'🔧 משימה'}`
       +`${f.amount>0?' &nbsp;|&nbsp; 💰 ₪'+f.amount.toLocaleString('he-IL')+(f.paid==='yes'?' ✅':f.paid==='partial'?' (חלקי)':''):''}</div>`
       +`<div class="fdesc">${f.desc||''}</div>`
       +`<div class="fmeta">`
@@ -866,7 +889,7 @@ function renderFaults(){
 }
 function openNewFault(preCustId){
   _eFault=null;
-  document.getElementById('M-fault-title').textContent='תקלה חדשה';
+  document.getElementById('M-fault-title').textContent='משימה חדשה';
   document.getElementById('mf-del').style.display='none';
   const sel=document.getElementById('mf-cust');
   sel.innerHTML='<option value="">בחר לקוח</option>'
@@ -887,7 +910,7 @@ function openNewFault(preCustId){
 function editFaultById(id){
   const f=window.faults.find(x=>x.id===id);if(!f)return;
   _eFault=id;
-  document.getElementById('M-fault-title').textContent='עריכת תקלה';
+  document.getElementById('M-fault-title').textContent='עריכת משימה';
   document.getElementById('mf-del').style.display='';
   const sel=document.getElementById('mf-cust');
   sel.innerHTML='<option value="">בחר לקוח</option>'
@@ -924,7 +947,7 @@ function saveFault(){
   if(_eFault)window.faults=window.faults.map(x=>x.id===_eFault?f:x);else window.faults.push(f);
   if(window._dbSaveFaults)window._dbSaveFaults(window.faults);
   closeM('M-fault');renderFaults();renderDash();
-  toast(_eFault?'תקלה עודכנה ✅':'תקלה נוספה ✅');
+  toast(_eFault?'משימה עודכנה ✅':'משימה נוספה ✅');
   if(f.date&&f.status==='scheduled'){
     setTimeout(()=>{if(confirm('לפתוח Google Calendar?'))gcalFault(f.id);},400);
   }
@@ -966,17 +989,17 @@ async function deleteSelected(){
   if(_selectedIds.size===0) return;
   if(!confirm('למחוק ' + _selectedIds.size + ' תקלות?')) return;
   const ids = [..._selectedIds];
-  toast('מוחק ' + ids.length + ' תקלות...');
+  toast('מוחק ' + ids.length + ' משימות...');
   const ok = window._dbDelMulti ? await window._dbDelMulti('faults', ids) : true;
   if(!ok){ toast('שגיאה במחיקה','err'); return; }
   window.faults = window.faults.filter(f=>!ids.includes(f.id));
   toggleSelectMode(false);
   renderFaults(); renderDash();
-  toast(ids.length + ' תקלות נמחקו ✅');
+  toast(ids.length + ' משימות נמחקו ✅');
 }
 
 async function delFault(){
-  if(!confirm('למחוק תקלה זו?'))return;
+  if(!confirm('למחוק משימה זו?'))return;
   const id=_eFault;
   closeM('M-fault');
   toast('מוחק...');
@@ -986,7 +1009,7 @@ async function delFault(){
   }
   window.faults=window.faults.filter(x=>x.id!==id);
   renderFaults();renderDash();
-  toast('תקלה נמחקה ✅');
+  toast('משימה נמחקה ✅');
 }
 
 // ══ NOTES ══
@@ -1160,6 +1183,71 @@ async function delNote(){
   toast('הערה נמחקה ✅');
 }
 
+// ══ WHATSAPP ══
+window.waMessages = [];
+
+function renderWhatsapp(){
+  const q=(document.getElementById('q-whatsapp')||{}).value||'';
+  const sf=(document.getElementById('f-whatsapp-status')||{}).value||'';
+  let list=[...window.waMessages];
+  if(q) list=list.filter(m=>(m.text||'').includes(q)||(m.from||'').includes(q)||((window.custs.find(c=>c.id===m.custId)||{}).name||'').includes(q));
+  if(sf) list=list.filter(m=>(m.waStatus||'new')===sf);
+  list.sort((a,b)=>(b.created||'').localeCompare(a.created||''));
+  const cnt=document.getElementById('cnt-whatsapp');
+  if(cnt) cnt.textContent=list.length+' הודעות';
+  const el=document.getElementById('list-whatsapp');
+  if(!el) return;
+  if(!list.length){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--tx3);font-size:14px">💬<br><br>אין הודעות WhatsApp</div>';
+    return;
+  }
+  el.innerHTML=list.map(m=>{
+    const c=m.custId?window.custs.find(x=>x.id===m.custId):null;
+    const phone=m.from||'';
+    const statusClr={new:'var(--grn)',read:'var(--tx3)',done:'var(--acc)'}[m.waStatus||'new'];
+    const statusLbl={new:'🟢 חדש',read:'👁️ נקרא',done:'✅ טופל'}[m.waStatus||'new'];
+    const dt=m.created?fmtD(m.created.split('T')[0])+(m.created.includes('T')?' '+m.created.split('T')[1].slice(0,5):''):'';
+    return `<div class="fc" style="border-right:3px solid var(--grn)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="ci">
+          <div class="av" style="background:${avClr(c?c.name:phone)};width:32px;height:32px;font-size:11px">${ini(c?c.name:phone)}</div>
+          <div>
+            <div style="font-weight:700;font-size:13px">${c?c.name:'לא ידוע'}</div>
+            <div style="font-size:11px;color:var(--tx3)">${phone}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:11px;color:${statusClr};font-weight:600">${statusLbl}</span>
+          <button class="btn bd btn-sm" onclick="delWaMsg('${m.id}')">🗑️</button>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--tx);line-height:1.6;background:var(--sur3);border-radius:8px;padding:10px;margin-bottom:8px">${m.text||''}</div>
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;color:var(--tx3)">📅 ${dt}</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn bs btn-sm" onclick="setWaStatus('${m.id}','read')">👁️ סמן נקרא</button>
+          <button class="btn bs btn-sm" onclick="setWaStatus('${m.id}','done')">✅ טופל</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function delWaMsg(id){
+  if(!confirm('למחוק הודעה זו?')) return;
+  if(window._dbDel) await window._dbDel('whatsapp',id);
+  window.waMessages=window.waMessages.filter(m=>m.id!==id);
+  renderWhatsapp();
+  toast('הודעה נמחקה ✅');
+}
+
+async function setWaStatus(id,status){
+  const m=window.waMessages.find(x=>x.id===id); if(!m) return;
+  m.waStatus=status;
+  try{ await setDoc(doc(db,'whatsapp',id),{...m}); }catch(e){}
+  renderWhatsapp();
+}
+
 // ══ SETTINGS ══
 function loadSettings(){
   document.getElementById('s-company').value=window.cfg.company||'';
@@ -1273,7 +1361,7 @@ function gcalFault(id){
   const hr=f.time?String(parseInt(f.time.split(':')[0])+1).padStart(2,'0')+f.time.split(':')[1]:'1000';
   const en=f.date.replace(/-/g,'')+'T'+hr+'00';
   const url='https://calendar.google.com/calendar/render?action=TEMPLATE'
-    +'&text='+encodeURIComponent(({fault:'תקלה',service:'שירות',installation:'התקנה',other:'ביקור'}[f.type||'fault']||'ביקור')+': '+(c?c.name:'לקוח'))
+    +'&text='+encodeURIComponent(({fault:'משימה',service:'שירות',installation:'התקנה',other:'ביקור'}[f.type||'fault']||'ביקור')+': '+(c?c.name:'לקוח'))
     +'&dates='+st+'/'+en
     +'&details='+encodeURIComponent((f.desc||'')+(c&&c.phone?'\nטלפון: '+c.phone:'')+(c&&c.address?'\nכתובת: '+c.address:''))
     +'&location='+encodeURIComponent(c&&c.address?c.address:'')
@@ -1367,10 +1455,11 @@ async function loadAll(){
   },7000);
 
   try{
-    const[cs,fs,ns,ss]=await Promise.all([
+    const[cs,fs,ns,ws,ss]=await Promise.all([
       getDocs(collection(db,'customers')),
       getDocs(collection(db,'faults')),
       getDocs(collection(db,'notes')),
+      getDocs(collection(db,'whatsapp')),
       getDocs(collection(db,'settings'))
     ]);
     clearTimeout(timeout);
@@ -1388,6 +1477,7 @@ async function loadAll(){
     }
     window.faults=fs.docs.map(d=>d.data());
     window.notes=ns.docs.map(d=>d.data());
+    window.waMessages=ws.docs.map(d=>d.data());
     hideLoader();
     renderDash();
     setTimeout(gcalInit,400);
@@ -1405,29 +1495,27 @@ async function loadAll(){
 
     onSnapshot(collection(db,'faults'),snap=>{
       window.faults=snap.docs.map(d=>d.data());
-      // Auto-match WhatsApp faults — only once per fault (not in loop)
-      const unmatched=window.faults.filter(f=>!f.custId&&f.updatedBy&&f.updatedBy.includes('WhatsApp'));
-      if(unmatched.length>0){
-        setTimeout(()=>{
-          unmatched.forEach(f=>{
-            const phone=(f.updatedBy.match(/\d{9,}/)||[''])[0];
-            if(!phone) return;
-            const matched=window.custs.find(c=>c.phone&&c.phone.replace(/\D/g,'').includes(phone.slice(-9)));
-            if(matched){
-              // Update locally first to prevent re-matching
-              f.custId=matched.id;
-              setDoc(doc(db,'faults',f.id),{...f}).catch(()=>{});
-            }
-          });
-        },1500);
-      }
       if(document.getElementById('pg-faults').classList.contains('on'))renderFaults();
       renderDash();
+    });
+
+    onSnapshot(collection(db,'whatsapp'),snap=>{
+      window.waMessages=snap.docs.map(d=>d.data());
+      // Auto-match customer by phone
+      window.waMessages.forEach(m=>{
+        if(!m.custId){
+          const phone=(m.from||'').replace(/\D/g,'');
+          const matched=window.custs.find(c=>c.phone&&c.phone.replace(/\D/g,'').includes(phone.slice(-9)));
+          if(matched) m.custId=matched.id;
+        }
+      });
+      if(document.getElementById('pg-whatsapp').classList.contains('on'))renderWhatsapp();
     });
 
     onSnapshot(collection(db,'notes'),snap=>{
       window.notes=snap.docs.map(d=>d.data());
       if(document.getElementById('pg-notes').classList.contains('on'))renderNotes();
+      renderDash();
     });
 
     onSnapshot(doc(db,'settings','main'),snap=>{
