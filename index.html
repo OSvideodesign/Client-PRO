@@ -170,17 +170,17 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="sc orange"><div class="sc-lbl">משימות פתוחות</div><div class="sc-val" id="st-faults">—</div><div class="sc-sub">🔧 ממתינות</div></div>
   </div>
   <div class="dash3">
-    <div class="tw" style="border-top:3px solid var(--yel)">
+    <div class="tw" style="border-top:3px solid var(--acc)">
       <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>⚠️ אחריות בפתח</span>
-        <button onclick="nav('warranties')" style="font-size:11px;color:var(--yel);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
+        <button onclick="nav('warranties')" style="font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
       </div>
       <div class="panel-body" id="pan-warr"></div>
     </div>
-    <div class="tw" style="border-top:3px solid var(--red)">
+    <div class="tw" style="border-top:3px solid var(--grn)">
       <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>💰 חובות פתוחים</span>
-        <button onclick="nav('debts')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
+        <button onclick="nav('debts')" style="font-size:11px;color:var(--grn);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
       </div>
       <div class="panel-body" id="pan-debts"></div>
     </div>
@@ -666,6 +666,8 @@ function closeM(id){document.getElementById(id).classList.remove('open')}
 // ══ DASHBOARD ══
 function renderDash(){
   if(!document.getElementById('st-total'))return;
+  // נרמול חובות
+  window.custs.forEach(c=>{c.debt=parseFloat(c.debt)||0;});
   let wc=0,dc=0,ds=0;
   const endY=new Date(new Date().getFullYear(),11,31);
   window.custs.forEach(c=>{
@@ -746,8 +748,8 @@ function renderCusts(){
       if(fw==='expired'&&(!s||s.d>=0))return false;
       if(fw==='soon'&&(!s||s.d<0||s.d>90))return false;
       if(fw==='valid'&&(!s||s.d<0))return false;}
-    if(fd==='has'&&!(parseFloat(c.debt)>0))return false;
-    if(fd==='no'&&parseFloat(c.debt)>0)return false;
+    if(fd==='has'&&!(c.debt>0))return false;
+    if(fd==='no'&&c.debt>0)return false;
     return true;
   }).sort((a,b)=>a.name.localeCompare(b.name,'he'));
   document.getElementById('cnt-custs').textContent=list.length+' לקוחות';
@@ -952,8 +954,10 @@ function renderWarr(){
 
 // ══ DEBTS ══
 function renderDebts(){
-  const list=window.custs.filter(c=>parseFloat(c.debt)>0).sort((a,b)=>parseFloat(b.debt)-parseFloat(a.debt));
-  const total=list.reduce((s,c)=>s+(parseFloat(c.debt)||0),0);
+  // נרמול חובות לכל הלקוחות
+  window.custs.forEach(c=>{c.debt=parseFloat(c.debt)||0;});
+  const list=window.custs.filter(c=>c.debt>0).sort((a,b)=>b.debt-a.debt);
+  const total=list.reduce((s,c)=>s+c.debt,0);
   document.getElementById('cnt-debts').textContent=list.length+' לקוחות | סה״כ: ₪'+total.toLocaleString('he-IL');
   const tb=document.getElementById('tb-debts');
   if(!list.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--tx3)">✅ אין חובות פתוחים</td></tr>';return;}
@@ -1792,7 +1796,9 @@ async function loadAll(){
     // ══ REAL-TIME LISTENERS ══
     onSnapshot(collection(db,'customers'),snap=>{
       const deleting=window._deletingIds||new Set();
-      window.custs=snap.docs.map(d=>({...d.data(),debt:parseFloat(d.data().debt)||0})).filter(c=>!deleting.has('customers:'+c.id));
+      window.custs=snap.docs
+        .map(d=>({...d.data(),debt:parseFloat(d.data().debt)||0}))
+        .filter(c=>!deleting.has('customers:'+c.id));
       const on=p=>document.getElementById('pg-'+p).classList.contains('on');
       if(on('customers'))renderCusts();
       if(on('warranties'))renderWarr();
