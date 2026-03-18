@@ -387,7 +387,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
       <div><label class="flbl">שנות אחריות</label><input class="finp" id="mc-warr" type="number" value="2" min="0" max="20"></div>
       <div><label class="flbl">סוג פרויקט</label><input class="finp" id="mc-project" placeholder="מצלמות / אינטרקום..."></div>
       <div><label class="flbl">ציוד</label><input class="finp" id="mc-equip"></div>
-      <div><label class="flbl">חוב (₪)</label><input class="finp" id="mc-debt" type="number" value="0"></div>
+      <div><label class="flbl">חוב (₪)</label><input class="finp" id="mc-debt" type="number" value="0" min="0" placeholder="0"></div>
       <div class="fg1"><label class="flbl">הערות חוב</label><input class="finp" id="mc-debt-desc"></div>
       <div class="fg1"><label class="flbl">הערות טכנאי</label><textarea class="finp" id="mc-notes" rows="3"></textarea></div>
       <div class="fg1">
@@ -667,13 +667,13 @@ function closeM(id){document.getElementById(id).classList.remove('open')}
 function renderDash(){
   if(!document.getElementById('st-total'))return;
   // נרמול חובות
-  window.custs.forEach(c=>{c.debt=parseFloat(c.debt)||0;});
+  window.custs.forEach(c=>{c.debt=Math.max(0,Number(c.debt)||0);});
   let wc=0,dc=0,ds=0;
   const endY=new Date(new Date().getFullYear(),11,31);
   window.custs.forEach(c=>{
     const e=wExp(c);
     if(e){const d=dLeft(e);if(d<0||(d>=0&&new Date(e)<=endY))wc++;}
-    if(parseFloat(c.debt)>0){dc++;ds+=parseFloat(c.debt)||0;}
+    if(c.debt>0){dc++;ds+=c.debt;}
   });
   document.getElementById('st-total').textContent=window.custs.length;
   document.getElementById('st-warr').textContent=wc;
@@ -687,11 +687,11 @@ function renderDash(){
       +`<div style="font-size:11px;color:var(--tx3)">${s.d<0?'פגה לפני '+Math.abs(s.d)+' ימים':'עוד '+s.d+' ימים'}</div></div>`
       +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ הכל תקין</div>';
-  const pd=window.custs.filter(c=>parseFloat(c.debt)>0);
+  const pd=window.custs.filter(c=>c.debt>0);
   document.getElementById('pan-debts').innerHTML=pd.length
     ?pd.map(c=>`<div class="ai danger" onclick="jumpTo('${c.id}')">`
       +`<span>💰</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${c.name}</div>`
-      +`<div style="font-size:11px;color:var(--tx3)">₪${parseFloat(c.debt).toLocaleString('he-IL')}</div></div>`
+      +`<div style="font-size:11px;color:var(--tx3)">₪${c.debt.toLocaleString('he-IL')}</div></div>`
       +`<span style="color:var(--tx3)">›</span></div>`).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין חובות</div>';
   const pf=window.faults.filter(f=>f.status!=='done');
@@ -763,7 +763,7 @@ function renderCusts(){
       +`<td>${c.phone?`<a href="tel:${c.phone}" style="color:var(--acc);text-decoration:none">${c.phone}</a>`:'—'}</td>`
       +`<td>${c.city||'—'}</td>`
       +`<td>${s?`<span class="badge ${s.cls}">${s.lbl}</span>`:'—'}</td>`
-      +`<td>${parseFloat(c.debt)>0?`<span class="badge br">₪${parseFloat(c.debt).toLocaleString('he-IL')}</span>`:'<span class="badge bg">✓</span>'}</td>`
+      +`<td>${c.debt>0?`<span class="badge br">₪${c.debt.toLocaleString('he-IL')}</span>`:'<span class="badge bg">✓</span>'}</td>`
       +`<td style="white-space:nowrap">`
       +`<button class="btn bs btn-sm" onclick="viewCust('${c.id}')">👁️</button> `
       +`<button class="btn bs btn-sm" onclick="editCustById('${c.id}')">✏️</button> `
@@ -830,7 +830,7 @@ function saveCust(){
     projectType:document.getElementById('mc-project').value.trim(),
     equipment:document.getElementById('mc-equip').value.trim(),
     techNotes:document.getElementById('mc-notes').value.trim(),
-    debt:parseFloat(document.getElementById('mc-debt').value)||0,
+    debt:Number(document.getElementById('mc-debt').value)||0,
     debtDesc:document.getElementById('mc-debt-desc').value.trim(),
     contacts:[...document.querySelectorAll('#mc-contacts-list .contact-row')].map(row=>({
       name:row.querySelector('.ct-name').value.trim(),
@@ -898,7 +898,7 @@ function viewCust(id){
       ${c.warrantyYears?`<div><div class="flbl">אחריות</div><div>${c.warrantyYears} שנים ${s?`<span class="badge ${s.cls}">${s.lbl}</span>`:''}</div></div>`:''}
       ${c.projectType?`<div><div class="flbl">פרויקט</div><div>${c.projectType}</div></div>`:''}
       ${c.equipment?`<div style="grid-column:1/-1"><div class="flbl">ציוד</div><div>${c.equipment}</div></div>`:''}
-      ${parseFloat(c.debt)>0?`<div style="grid-column:1/-1"><div class="flbl">חוב</div><div style="color:var(--red);font-weight:700">₪${parseFloat(c.debt).toLocaleString('he-IL')} ${c.debtDesc?' — '+c.debtDesc:''}</div></div>`:''}
+      ${c.debt>0?`<div style="grid-column:1/-1"><div class="flbl">חוב</div><div style="color:var(--red);font-weight:700">₪${c.debt.toLocaleString('he-IL')} ${c.debtDesc?' — '+c.debtDesc:''}</div></div>`:''}
       ${c.techNotes?`<div style="grid-column:1/-1"><div class="flbl">הערות</div><div style="color:var(--tx2)">${c.techNotes}</div></div>`:''}
       ${(c.contacts&&c.contacts.length)?`<div style="grid-column:1/-1">
         <div class="flbl" style="margin-bottom:8px">👥 אנשי קשר נוספים</div>
@@ -955,7 +955,7 @@ function renderWarr(){
 // ══ DEBTS ══
 function renderDebts(){
   // נרמול חובות לכל הלקוחות
-  window.custs.forEach(c=>{c.debt=parseFloat(c.debt)||0;});
+  window.custs.forEach(c=>{c.debt=Math.max(0,Number(c.debt)||0);});
   const list=window.custs.filter(c=>c.debt>0).sort((a,b)=>b.debt-a.debt);
   const total=list.reduce((s,c)=>s+c.debt,0);
   document.getElementById('cnt-debts').textContent=list.length+' לקוחות | סה״כ: ₪'+total.toLocaleString('he-IL');
@@ -965,7 +965,7 @@ function renderDebts(){
     +`<td><div class="ci"><div class="av" style="background:${avClr(c.name)};width:28px;height:28px;font-size:10px">${ini(c.name)}</div>`
     +`<span style="font-weight:600;cursor:pointer" onclick="viewCust('${c.id}')">${c.name}</span></div></td>`
     +`<td>${c.phone?`<a href="tel:${c.phone}" style="color:var(--acc)">${c.phone}</a>`:'—'}</td>`
-    +`<td><span style="color:var(--red);font-weight:700">₪${parseFloat(c.debt).toLocaleString('he-IL')}</span></td>`
+    +`<td><span style="color:var(--red);font-weight:700">₪${c.debt.toLocaleString('he-IL')}</span></td>`
     +`<td style="color:var(--tx3);font-size:12px">${c.debtDesc||'—'}</td>`
     +`<td><button class="btn bs btn-sm" onclick="markPaid('${c.id}')">✅ שולם</button></td>`
     +`</tr>`).join('');
@@ -1237,9 +1237,8 @@ function renderNotes(){
   const q = (document.getElementById('note-search')||{}).value||'';
   const catF = (document.getElementById('note-filter-cat')||{}).value||'';
   const userF = (document.getElementById('note-filter-user')||{}).value||'';
-  const me = window._currentUser||'';
 
-  let list = window.notes.filter(n => !n.owner || n.owner === me);
+  let list = [...window.notes];
   if(q) list = list.filter(n=>(n.text||'').includes(q)||(n.custName||'').includes(q));
   if(catF) list = list.filter(n=>(n.cat||'general')===catF);
   if(userF) list = list.filter(n=>n.owner===userF);
@@ -1709,7 +1708,7 @@ function hideLoader(){const el=document.getElementById('_ldr');if(el)el.remove()
 // ══ FIREBASE HELPERS — exposed to main script ══
 window._dbSaveCusts=async(items)=>{
   try{
-    const normalized=items.map(c=>({...c,debt:parseFloat(c.debt)||0}));
+    const normalized=items.map(c=>({...c,debt:Math.max(0,Number(c.debt)||0)}));
     await Promise.all(normalized.map(c=>setDoc(doc(db,'customers',c.id),c)));
   }catch(e){console.error('saveCusts:',e);}
 };
@@ -1772,7 +1771,7 @@ async function loadAll(){
     const cfgDoc=ss.docs.find(d=>d.id==='main');
     if(cfgDoc){Object.assign(window.cfg,cfgDoc.data());localStorage.setItem('crm_cfg',JSON.stringify(window.cfg));}
 
-    const remoteCusts=cs.docs.map(d=>({...d.data(),debt:parseFloat(d.data().debt)||0}));
+    const remoteCusts=cs.docs.map(d=>{const data=d.data();return{...data,debt:Math.max(0,Number(data.debt)||0)};});
     if(remoteCusts.length===0){
       loader('מעלה לקוחות לענן...');
       await Promise.all(window.SEED_CUSTS.map(c=>setDoc(doc(db,'customers',c.id),c)));
@@ -1784,12 +1783,17 @@ async function loadAll(){
     window.notes=ns.docs.map(d=>d.data());
     window.waMessages=ws.docs.map(d=>d.data());
     hideLoader();
-    // תיקון לקוחות עם debt כ-string
-    const needsFix=window.custs.filter(c=>typeof c.debt==='string'&&parseFloat(c.debt)>0);
-    if(needsFix.length>0){
-      needsFix.forEach(c=>{ c.debt=parseFloat(c.debt)||0; });
-      window._dbSaveCusts(window.custs).catch(()=>{});
-    }
+    // תיקון אוטומטי — כתוב חזרה לקוחות שה-debt שלהם היה string
+    cs.docs.forEach(d=>{
+      const raw=d.data().debt;
+      if(typeof raw==='string'&&raw!==''&&raw!=='0'){
+        const val=Math.max(0,Number(raw)||0);
+        setDoc(doc(db,'customers',d.id),{...d.data(),debt:val}).catch(()=>{});
+        const local=window.custs.find(c=>c.id===d.id);
+        if(local) local.debt=val;
+        console.log('תיקון debt:',d.data().name,raw,'→',val);
+      }
+    });
     renderDash();
     setTimeout(gcalInit,400);
 
@@ -1797,7 +1801,7 @@ async function loadAll(){
     onSnapshot(collection(db,'customers'),snap=>{
       const deleting=window._deletingIds||new Set();
       window.custs=snap.docs
-        .map(d=>({...d.data(),debt:parseFloat(d.data().debt)||0}))
+        .map(d=>{const data=d.data();return{...data,debt:Math.max(0,Number(data.debt)||0)};})
         .filter(c=>!deleting.has('customers:'+c.id));
       const on=p=>document.getElementById('pg-'+p).classList.contains('on');
       if(on('customers'))renderCusts();
