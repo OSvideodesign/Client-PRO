@@ -170,9 +170,27 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="sc orange"><div class="sc-lbl">משימות פתוחות</div><div class="sc-val" id="st-faults">—</div><div class="sc-sub">🔧 ממתינות</div></div>
   </div>
   <div class="dash3">
-    <div class="tw"><div class="panel-title" style="display:flex;align-items:center;justify-content:space-between"><span>⚠️ אחריות בפתח</span><button onclick="nav('warranties')" style="font-size:11px;color:var(--yel);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button></div><div class="panel-body" id="pan-warr"></div></div>
-    <div class="tw"><div class="panel-title" style="display:flex;align-items:center;justify-content:space-between"><span>💰 חובות פתוחים</span><button onclick="nav('debts')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button></div><div class="panel-body" id="pan-debts"></div></div>
-    <div class="tw"><div class="panel-title" style="display:flex;align-items:center;justify-content:space-between"><span>🔧 משימות פתוחות</span><button onclick="nav('faults')" style="font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button></div><div class="panel-body" id="pan-faults"></div></div>
+    <div class="tw" style="border-top:3px solid var(--yel)">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>⚠️ אחריות בפתח</span>
+        <button onclick="nav('warranties')" style="font-size:11px;color:var(--yel);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
+      </div>
+      <div class="panel-body" id="pan-warr"></div>
+    </div>
+    <div class="tw" style="border-top:3px solid var(--red)">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>💰 חובות פתוחים</span>
+        <button onclick="nav('debts')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
+      </div>
+      <div class="panel-body" id="pan-debts"></div>
+    </div>
+    <div class="tw" style="border-top:3px solid var(--ora)">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🔧 משימות פתוחות</span>
+        <button onclick="nav('faults')" style="font-size:11px;color:var(--ora);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button>
+      </div>
+      <div class="panel-body" id="pan-faults"></div>
+    </div>
   </div>
   <div class="dash3" style="margin-top:14px">
     <div class="tw" style="border-top:3px solid var(--acc)">
@@ -1008,8 +1026,9 @@ function openNewFault(preCustId){
   const sel=document.getElementById('mf-cust');
   const custList=[...window.custs].sort((a,b)=>a.name.localeCompare(b.name,'he'));
   sel.innerHTML='<option value="">— בחר לקוח —</option>'
-    +custList.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')
-    +'<option value="__guest__">👤 לקוח מזדמן</option>';
+    +'<option value="__guest__">👤 לקוח מזדמן</option>'
+    +'<option disabled style="color:var(--tx3)">──────────────</option>'
+    +custList.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   sel.value=preCustId||'';
   document.getElementById('mf-guest-fields').style.display='none';
   document.getElementById('mf-guest-name').value='';
@@ -1032,9 +1051,10 @@ function editFaultById(id){
   document.getElementById('mf-del').style.display='';
   const sel=document.getElementById('mf-cust');
   sel.innerHTML='<option value="">בחר לקוח</option>'
+    +'<option value="__guest__">👤 לקוח מזדמן</option>'
+    +'<option disabled style="color:var(--tx3)">──────────────</option>'
     +[...window.custs].sort((a,b)=>a.name.localeCompare(b.name,'he'))
-    .map(c=>`<option value="${c.id}">${c.name}</option>`).join('')
-    +'<option value="__guest__">👤 לקוח מזדמן</option>';
+    .map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   sel.value=f.custId||'';
   if(!f.custId&&f.guestName) sel.value='__guest__';
   document.getElementById('mf-guest-fields').style.display=(sel.value==='__guest__')?'block':'none';
@@ -1684,7 +1704,10 @@ function hideLoader(){const el=document.getElementById('_ldr');if(el)el.remove()
 
 // ══ FIREBASE HELPERS — exposed to main script ══
 window._dbSaveCusts=async(items)=>{
-  try{await Promise.all(items.map(c=>setDoc(doc(db,'customers',c.id),c)));}catch(e){console.error('saveCusts:',e);}
+  try{
+    const normalized=items.map(c=>({...c,debt:parseFloat(c.debt)||0}));
+    await Promise.all(normalized.map(c=>setDoc(doc(db,'customers',c.id),c)));
+  }catch(e){console.error('saveCusts:',e);}
 };
 window._dbSaveFaults=async(items)=>{
   try{await Promise.all(items.map(f=>setDoc(doc(db,'faults',f.id),f)));}catch(e){console.error('saveFaults:',e);}
@@ -1757,6 +1780,12 @@ async function loadAll(){
     window.notes=ns.docs.map(d=>d.data());
     window.waMessages=ws.docs.map(d=>d.data());
     hideLoader();
+    // תיקון לקוחות עם debt כ-string
+    const needsFix=window.custs.filter(c=>typeof c.debt==='string'&&parseFloat(c.debt)>0);
+    if(needsFix.length>0){
+      needsFix.forEach(c=>{ c.debt=parseFloat(c.debt)||0; });
+      window._dbSaveCusts(window.custs).catch(()=>{});
+    }
     renderDash();
     setTimeout(gcalInit,400);
 
@@ -1787,7 +1816,7 @@ async function loadAll(){
           if(matched) m.custId=matched.id;
         }
       });
-      if(document.getElementById('pg-whatsapp').classList.contains('on'))renderWhatsapp();
+      if(document.getElementById('pg-archive')&&document.getElementById('pg-archive').classList.contains('on'))renderArchive();
     });
 
     onSnapshot(collection(db,'notes'),snap=>{
