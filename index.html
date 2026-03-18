@@ -267,7 +267,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="sw"><input type="text" id="q-faults" placeholder="חפש..." oninput="renderFaults()"><span class="si">🔍</span></div>
     <select class="fsel" id="f-fstatus" onchange="renderFaults()">
       <option value="">כל הסטטוסים</option><option value="open">פתוחה</option>
-      <option value="scheduled">נקבע תאריך</option><option value="done">טופלה</option>
+      <option value="scheduled">נקבע תאריך</option>
     </select>
     <button class="btn bs btn-sm" id="select-mode-btn" onclick="toggleSelectMode(true)">☑️ בחר מרובה</button>
   </div>
@@ -667,7 +667,7 @@ function renderDash(){
       +`<div style="font-size:11px;color:var(--tx3)">${s.d<0?'פגה לפני '+Math.abs(s.d)+' ימים':'עוד '+s.d+' ימים'}</div></div>`
       +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ הכל תקין</div>';
-  const pd=window.custs.filter(c=>c.debt>0);
+  const pd=window.custs.filter(c=>parseFloat(c.debt)>0);
   document.getElementById('pan-debts').innerHTML=pd.length
     ?pd.map(c=>`<div class="ai danger" onclick="jumpTo('${c.id}')">`
       +`<span>💰</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${c.name}</div>`
@@ -726,8 +726,8 @@ function renderCusts(){
       if(fw==='expired'&&(!s||s.d>=0))return false;
       if(fw==='soon'&&(!s||s.d<0||s.d>90))return false;
       if(fw==='valid'&&(!s||s.d<0))return false;}
-    if(fd==='has'&&!(c.debt>0))return false;
-    if(fd==='no'&&c.debt>0)return false;
+    if(fd==='has'&&!(parseFloat(c.debt)>0))return false;
+    if(fd==='no'&&parseFloat(c.debt)>0)return false;
     return true;
   }).sort((a,b)=>a.name.localeCompare(b.name,'he'));
   document.getElementById('cnt-custs').textContent=list.length+' לקוחות';
@@ -741,7 +741,7 @@ function renderCusts(){
       +`<td>${c.phone?`<a href="tel:${c.phone}" style="color:var(--acc);text-decoration:none">${c.phone}</a>`:'—'}</td>`
       +`<td>${c.city||'—'}</td>`
       +`<td>${s?`<span class="badge ${s.cls}">${s.lbl}</span>`:'—'}</td>`
-      +`<td>${c.debt>0?`<span class="badge br">₪${parseFloat(c.debt).toLocaleString('he-IL')}</span>`:'<span class="badge bg">✓</span>'}</td>`
+      +`<td>${parseFloat(c.debt)>0?`<span class="badge br">₪${parseFloat(c.debt).toLocaleString('he-IL')}</span>`:'<span class="badge bg">✓</span>'}</td>`
       +`<td style="white-space:nowrap">`
       +`<button class="btn bs btn-sm" onclick="viewCust('${c.id}')">👁️</button> `
       +`<button class="btn bs btn-sm" onclick="editCustById('${c.id}')">✏️</button> `
@@ -876,7 +876,7 @@ function viewCust(id){
       ${c.warrantyYears?`<div><div class="flbl">אחריות</div><div>${c.warrantyYears} שנים ${s?`<span class="badge ${s.cls}">${s.lbl}</span>`:''}</div></div>`:''}
       ${c.projectType?`<div><div class="flbl">פרויקט</div><div>${c.projectType}</div></div>`:''}
       ${c.equipment?`<div style="grid-column:1/-1"><div class="flbl">ציוד</div><div>${c.equipment}</div></div>`:''}
-      ${c.debt>0?`<div style="grid-column:1/-1"><div class="flbl">חוב</div><div style="color:var(--red);font-weight:700">₪${parseFloat(c.debt).toLocaleString('he-IL')} ${c.debtDesc?' — '+c.debtDesc:''}</div></div>`:''}
+      ${parseFloat(c.debt)>0?`<div style="grid-column:1/-1"><div class="flbl">חוב</div><div style="color:var(--red);font-weight:700">₪${parseFloat(c.debt).toLocaleString('he-IL')} ${c.debtDesc?' — '+c.debtDesc:''}</div></div>`:''}
       ${c.techNotes?`<div style="grid-column:1/-1"><div class="flbl">הערות</div><div style="color:var(--tx2)">${c.techNotes}</div></div>`:''}
       ${(c.contacts&&c.contacts.length)?`<div style="grid-column:1/-1">
         <div class="flbl" style="margin-bottom:8px">👥 אנשי קשר נוספים</div>
@@ -962,13 +962,12 @@ function renderFaults(){
   const SMAP={open:'br',scheduled:'bb',done:'bg'};
   const SLBL={open:'🔴 פתוחה',scheduled:'📅 נקבע תאריך',done:'✅ טופלה'};
   let list=window.faults.filter(f=>{
+    if(f.status==='done') return false; // טופלו → ארכיון בלבד
     const c=window.custs.find(x=>x.id===f.custId);
-    if(q&&!(c?c.name:'').toLowerCase().includes(q)&&!(f.desc||'').toLowerCase().includes(q))return false;
+    if(q&&!(c?c.name:'').toLowerCase().includes(q)&&!(f.desc||'').toLowerCase().includes(q)&&!(f.guestName||'').toLowerCase().includes(q))return false;
     if(sf&&f.status!==sf)return false;
     return true;
   }).sort((a,b)=>{
-    if(a.status==='done'&&b.status!=='done')return 1;
-    if(b.status==='done'&&a.status!=='done')return -1;
     const o={urgent:0,high:1,medium:2,low:3};
     return(o[a.priority]||2)-(o[b.priority]||2);
   });
@@ -1005,11 +1004,11 @@ function openNewFault(preCustId){
   document.getElementById('M-fault-title').textContent='משימה חדשה';
   document.getElementById('mf-del').style.display='none';
   const sel=document.getElementById('mf-cust');
-  sel.innerHTML='<option value="">בחר לקוח</option>'
-    +[...window.custs].sort((a,b)=>a.name.localeCompare(b.name,'he'))
-    .map(c=>`<option value="${c.id}">${c.name}</option>`).join('')
+  const custList=[...window.custs].sort((a,b)=>a.name.localeCompare(b.name,'he'));
+  sel.innerHTML='<option value="">— בחר לקוח —</option>'
+    +custList.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')
     +'<option value="__guest__">👤 לקוח מזדמן</option>';
-  if(preCustId)sel.value=preCustId;
+  sel.value=preCustId||'';
   document.getElementById('mf-guest-fields').style.display='none';
   document.getElementById('mf-guest-name').value='';
   document.getElementById('mf-guest-phone').value='';
@@ -1080,11 +1079,18 @@ function saveFault(){
   };
   if(_eFault)window.faults=window.faults.map(x=>x.id===_eFault?f:x);else window.faults.push(f);
   if(window._dbSaveFaults)window._dbSaveFaults(window.faults);
-  closeM('M-fault');renderFaults();renderDash();
-  toast(_eFault?'משימה עודכנה ✅':'משימה נוספה ✅');
-  if(!_eFault) sendFaultNotification(f);
-  if(f.date&&f.status==='scheduled'){
-    setTimeout(()=>{if(confirm('לפתוח Google Calendar?'))gcalFault(f.id);},400);
+  closeM('M-fault');
+  if(f.status==='done'){
+    renderFaults();renderDash();
+    toast('משימה הועברה לארכיון ✅');
+    setTimeout(()=>nav('archive'),300);
+  } else {
+    renderFaults();renderDash();
+    toast(_eFault?'משימה עודכנה ✅':'משימה נוספה ✅');
+    if(!_eFault) sendFaultNotification(f);
+    if(f.date&&f.status==='scheduled'){
+      setTimeout(()=>{if(confirm('לפתוח Google Calendar?'))gcalFault(f.id);},400);
+    }
   }
 }
 // ══ BULK DELETE ══
@@ -1730,7 +1736,7 @@ async function loadAll(){
     const cfgDoc=ss.docs.find(d=>d.id==='main');
     if(cfgDoc){Object.assign(window.cfg,cfgDoc.data());localStorage.setItem('crm_cfg',JSON.stringify(window.cfg));}
 
-    const remoteCusts=cs.docs.map(d=>d.data());
+    const remoteCusts=cs.docs.map(d=>({...d.data(),debt:parseFloat(d.data().debt)||0}));
     if(remoteCusts.length===0){
       loader('מעלה לקוחות לענן...');
       await Promise.all(window.SEED_CUSTS.map(c=>setDoc(doc(db,'customers',c.id),c)));
@@ -1748,7 +1754,7 @@ async function loadAll(){
     // ══ REAL-TIME LISTENERS ══
     onSnapshot(collection(db,'customers'),snap=>{
       const deleting=window._deletingIds||new Set();
-      window.custs=snap.docs.map(d=>d.data()).filter(c=>!deleting.has('customers:'+c.id));
+      window.custs=snap.docs.map(d=>({...d.data(),debt:parseFloat(d.data().debt)||0})).filter(c=>!deleting.has('customers:'+c.id));
       const on=p=>document.getElementById('pg-'+p).classList.contains('on');
       if(on('customers'))renderCusts();
       if(on('warranties'))renderWarr();
