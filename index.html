@@ -170,9 +170,9 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div class="sc orange"><div class="sc-lbl">משימות פתוחות</div><div class="sc-val" id="st-faults">—</div><div class="sc-sub">🔧 ממתינות</div></div>
   </div>
   <div class="dash3">
-    <div class="tw"><div class="panel-title">⚠️ אחריות בפתח</div><div class="panel-body" id="pan-warr"></div></div>
-    <div class="tw"><div class="panel-title">💰 חובות פתוחים</div><div class="panel-body" id="pan-debts"></div></div>
-    <div class="tw"><div class="panel-title">🔧 משימות פתוחות</div><div class="panel-body" id="pan-faults"></div></div>
+    <div class="tw"><div class="panel-title" style="display:flex;align-items:center;justify-content:space-between"><span>⚠️ אחריות בפתח</span><button onclick="nav('warranties')" style="font-size:11px;color:var(--yel);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button></div><div class="panel-body" id="pan-warr"></div></div>
+    <div class="tw"><div class="panel-title" style="display:flex;align-items:center;justify-content:space-between"><span>💰 חובות פתוחים</span><button onclick="nav('debts')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button></div><div class="panel-body" id="pan-debts"></div></div>
+    <div class="tw"><div class="panel-title" style="display:flex;align-items:center;justify-content:space-between"><span>🔧 משימות פתוחות</span><button onclick="nav('faults')" style="font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;font-family:Heebo,sans-serif">הכל ›</button></div><div class="panel-body" id="pan-faults"></div></div>
   </div>
   <div class="dash3" style="margin-top:14px">
     <div class="tw" style="border-top:3px solid var(--acc)">
@@ -676,9 +676,11 @@ function renderDash(){
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין חובות</div>';
   const pf=window.faults.filter(f=>f.status!=='done');
   document.getElementById('pan-faults').innerHTML=pf.length
-    ?pf.map(f=>{const c=window.custs.find(x=>x.id===f.custId);
-      return`<div class="ai warn" onclick="jumpTo('${c?c.id:''}')">`
-        +`<span>🔧</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${c?c.name:'לא ידוע'}</div>`
+    ?pf.map(f=>{
+      const c=window.custs.find(x=>x.id===f.custId);
+      const name=c?c.name:(f.guestName||'לקוח מזדמן');
+      return`<div class="ai warn" onclick="nav('faults')">`
+        +`<span>🔧</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${name}</div>`
         +`<div style="font-size:11px;color:var(--tx3)">${(f.desc||'').slice(0,40)}</div></div>`
         +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין משימות</div>';
@@ -1080,10 +1082,11 @@ function saveFault(){
   if(_eFault)window.faults=window.faults.map(x=>x.id===_eFault?f:x);else window.faults.push(f);
   if(window._dbSaveFaults)window._dbSaveFaults(window.faults);
   closeM('M-fault');
+  const wasInArchive=_eFault&&(window.faults.find(x=>x.id===_eFault)||{status:''}).status==='done';
   if(f.status==='done'){
-    renderFaults();renderDash();
+    renderFaults();renderArchive();renderDash();
     toast('משימה הועברה לארכיון ✅');
-    setTimeout(()=>nav('archive'),300);
+    if(!wasInArchive) setTimeout(()=>nav('archive'),300);
   } else {
     renderFaults();renderDash();
     toast(_eFault?'משימה עודכנה ✅':'משימה נוספה ✅');
@@ -1512,11 +1515,16 @@ function renderArchive(){
   el.innerHTML=list.map(f=>{
     const c=f.custId?window.custs.find(x=>x.id===f.custId):null;
     const name=c?c.name:(f.guestName||'לקוח מזדמן');
-    return`<div class="fc" style="border-right:3px solid var(--grn);opacity:0.85">
+    const paidLbl={yes:'✅ שולם',partial:'⚠️ חלקי',no:'❌ לא שולם'}[f.paid||'no'];
+    const paidClr={yes:'var(--grn)',partial:'var(--yel)',no:'var(--tx3)'}[f.paid||'no'];
+    return`<div class="fc" style="border-right:3px solid var(--grn)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="ci">
           <div class="av" style="background:${avClr(name)};width:28px;height:28px;font-size:10px">${ini(name)}</div>
-          <div style="font-weight:700;font-size:13px">${name}</div>
+          <div>
+            <div style="font-weight:700;font-size:13px">${name}</div>
+            ${f.amount>0?`<div style="font-size:11px;color:${paidClr}">💰 ₪${f.amount.toLocaleString('he-IL')} — ${paidLbl}</div>`:''}
+          </div>
         </div>
         <span class="badge bg">✅ טופל</span>
       </div>
@@ -1524,6 +1532,7 @@ function renderArchive(){
       <div class="fmeta" style="margin-top:8px">
         ${f.updatedBy?`<span style="color:var(--tx3)">✏️ ${f.updatedBy}</span>`:''}
         ${f.created?`<span style="color:var(--tx3)">📅 ${fmtD(f.created)}</span>`:''}
+        <button class="btn bs btn-sm" onclick="editFaultById('${f.id}')">✏️ ערוך</button>
         <button class="btn bs btn-sm" onclick="restoreFault('${f.id}')">↩️ החזר למשימות</button>
       </div>
     </div>`;
