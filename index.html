@@ -674,8 +674,8 @@ function renderDash(){
     if(e){const d=dLeft(e);if(d<0||(d>=0&&new Date(e)<=endY))wc++;}
     if(c.debt>0){dc++;ds+=c.debt;}
   });
-  // הוסף גם חובות ממשימות לא שולמו
-  window.faults.filter(f=>f.amount>0&&f.paid!=='yes'&&f.status!=='done').forEach(f=>{
+  // הוסף גם חובות ממשימות לא שולמו (כולל ארכיון)
+  window.faults.filter(f=>f.amount>0&&f.paid!=='yes').forEach(f=>{
     dc++; ds+=parseFloat(f.amount)||0;
   });
   document.getElementById('st-total').textContent=window.custs.length;
@@ -962,9 +962,9 @@ function renderDebts(){
   // חובות לקוחות
   const custDebts=window.custs.filter(c=>c.debt>0);
 
-  // משימות לא שולמו (amount > 0 ו-paid !== 'yes')
+  // משימות לא שולמו (amount > 0 ו-paid !== 'yes') — כולל ארכיון
   const unpaidFaults=window.faults.filter(f=>
-    f.amount>0 && f.paid!=='yes' && f.status!=='done'
+    f.amount>0 && f.paid!=='yes'
   );
 
   const totalCust=custDebts.reduce((s,c)=>s+c.debt,0);
