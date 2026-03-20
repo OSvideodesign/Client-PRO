@@ -152,6 +152,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <button class="nav-btn" id="nb-notes" onclick="nav('notes')">📝 הערות</button>
     <div class="nav-sec">מערכת</div>
     <button class="nav-btn" id="nb-settings" onclick="nav('settings')">⚙️ הגדרות</button>
+    <button class="nav-btn" id="nb-log" onclick="nav('log')" style="display:none">📋 לוג שינויים</button>
     <button class="nav-btn" onclick="logout()" style="color:var(--red);margin-top:8px">🚪 התנתק</button>
   </nav>
 </aside>
@@ -346,6 +347,33 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     </select>
   </div>
   <div id="list-archive" class="fg-grid"></div>
+</div>
+
+<div class="pg" id="pg-log">
+  <div class="ph">
+    <div><div class="pt">📋 לוג שינויים</div><div class="ps" id="cnt-log"></div></div>
+    <button class="btn bd btn-sm" onclick="if(confirm('למחוק את כל הלוג?'))clearLog()">🗑️ נקה לוג</button>
+  </div>
+  <div class="toolbar">
+    <div class="sw"><input type="text" id="q-log" placeholder="חפש..." oninput="renderLog()"><span class="si">🔍</span></div>
+    <select class="fsel" id="f-log-user" onchange="renderLog()">
+      <option value="">כל המשתמשים</option>
+      <option value="רז">רז</option>
+      <option value="אופיר">אופיר</option>
+      <option value="גלאל">גלאל</option>
+      <option value="מוטי">מוטי</option>
+    </select>
+    <select class="fsel" id="f-log-type" onchange="renderLog()">
+      <option value="">כל הפעולות</option>
+      <option value="customer">לקוח</option>
+      <option value="fault">משימה</option>
+      <option value="note">הערה</option>
+    </select>
+  </div>
+  <div class="tw"><div class="tscroll"><table>
+    <thead><tr><th>תאריך ושעה</th><th>משתמש</th><th>פעולה</th><th>פרטים</th></tr></thead>
+    <tbody id="tb-log"></tbody>
+  </table></div></div>
 </div>
 
 <div class="pg" id="pg-settings">
@@ -637,6 +665,9 @@ function applyUser(u){
   document.getElementById('login-screen').style.display='none';
   const b=document.getElementById('user-badge');
   if(b){b.textContent=u.name;b.style.background=u.color+'22';b.style.color=u.color;b.style.border='1px solid '+u.color+'44';}
+  // הצג לוג רק לרז
+  const logBtn=document.getElementById('nb-log');
+  if(logBtn) logBtn.style.display=u.name==='רז'?'':'none';
 }
 function backToUsers(){
   _loginTarget=null;
@@ -657,7 +688,7 @@ function nav(page){
   pg.classList.add('on');
   const nb=document.getElementById('nb-'+page);if(nb)nb.classList.add('on');
   document.querySelectorAll('.mnb').forEach(b=>{if(b.getAttribute('onclick')==="nav('"+page+"')")b.classList.add('on');});
-  const R={dashboard:renderDash,customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,settings:loadSettings,notes:renderNotes,whatsapp:renderWhatsapp,archive:renderArchive};
+  const R={dashboard:renderDash,customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,settings:loadSettings,notes:renderNotes,whatsapp:renderWhatsapp,archive:renderArchive,log:renderLog};
   if(R[page])R[page]();
 }
 function openM(id){document.getElementById(id).classList.add('open')}
@@ -855,6 +886,7 @@ function saveCust(){
   };
   if(_eCust)window.custs=window.custs.map(x=>x.id===_eCust?c:x);else window.custs.push(c);
   if(window._dbSaveCusts)window._dbSaveCusts(window.custs);
+  addLog('customer', _eCust?'עריכת לקוח':'הוספת לקוח', c.name);
   closeM('M-cust');renderCusts();renderDash();
   toast(_eCust?'לקוח עודכן ✅':'לקוח נוסף ✅');
 }
@@ -892,6 +924,7 @@ async function delCust(){
     if(!ok){toast('שגיאה במחיקה','err');return;}
   }
   window.custs=window.custs.filter(x=>x.id!==id);
+  addLog('customer','מחיקת לקוח', window.custs.find(x=>x.id===id)?.name||id);
   renderCusts();renderDash();
   toast('לקוח נמחק ✅');
 }
@@ -1159,6 +1192,8 @@ function saveFault(){
   };
   if(_eFault)window.faults=window.faults.map(x=>x.id===_eFault?f:x);else window.faults.push(f);
   if(window._dbSaveFaults)window._dbSaveFaults(window.faults);
+  const fCust=f.custId?window.custs.find(x=>x.id===f.custId):null;
+  addLog('fault', _eFault?'עריכת משימה':'הוספת משימה', (fCust?fCust.name:f.guestName||'לקוח מזדמן')+' — '+(f.desc||'').slice(0,40));
   closeM('M-fault');
   const wasInArchive=_eFault&&(window.faults.find(x=>x.id===_eFault)||{status:''}).status==='done';
   if(f.status==='done'){
@@ -1386,6 +1421,7 @@ function saveNote(){
   if(_eNote) window.notes = window.notes.map(x=>x.id===_eNote?n:x);
   else window.notes.push(n);
   if(window._dbSaveNotes) window._dbSaveNotes(window.notes);
+  addLog('note', _eNote?'עריכת הערה':'הוספת הערה', (n.text||'').slice(0,50));
   closeM('M-note'); renderNotes();
   toast(_eNote ? 'הערה עודכנה ✅' : 'הערה נוספה ✅');
 }
@@ -1547,6 +1583,56 @@ function requestNotificationPermission(){
     if(p==='granted') toast('התראות הופעלו ✅');
     else toast('התראות נדחו','err');
   });
+}
+
+// ══ LOG ══
+function addLog(type, action, details){
+  if(!window._dbLogAdd) return;
+  const entry={
+    id:uid(),
+    type, action, details,
+    user:window._currentUser||'מערכת',
+    ts:new Date().toISOString()
+  };
+  window._dbLogAdd(entry);
+}
+
+function renderLog(){
+  const q=(document.getElementById('q-log')||{}).value||'';
+  const uf=(document.getElementById('f-log-user')||{}).value||'';
+  const tf=(document.getElementById('f-log-type')||{}).value||'';
+  let list=[...(window.logEntries||[])];
+  if(q) list=list.filter(e=>(e.details||'').includes(q)||(e.action||'').includes(q)||(e.user||'').includes(q));
+  if(uf) list=list.filter(e=>e.user===uf);
+  if(tf) list=list.filter(e=>e.type===tf);
+  list.sort((a,b)=>b.ts.localeCompare(a.ts));
+  const cnt=document.getElementById('cnt-log');
+  if(cnt) cnt.textContent=list.length+' רשומות';
+  const tb=document.getElementById('tb-log');
+  if(!tb) return;
+  if(!list.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3)">אין רשומות</td></tr>';return;}
+  tb.innerHTML=list.map(e=>{
+    const dt=new Date(e.ts);
+    const dateStr=fmtD(e.ts.split('T')[0])+' '+dt.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+    const u=USERS.find(x=>x.name===e.user);
+    const clr=u?u.color:'var(--tx3)';
+    const typeIcon={customer:'👤',fault:'🔧',note:'📝',other:'📋'}[e.type||'other']||'📋';
+    return`<tr>
+      <td style="font-size:12px;color:var(--tx3);white-space:nowrap">${dateStr}</td>
+      <td><span style="color:${clr};font-weight:600">${e.user||'—'}</span></td>
+      <td>${typeIcon} ${e.action||''}</td>
+      <td style="color:var(--tx2);font-size:12px">${e.details||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function clearLog(){
+  if(!window._dbDelMulti) return;
+  const ids=(window.logEntries||[]).map(e=>e.id);
+  if(ids.length) await window._dbDelMulti('log',ids);
+  window.logEntries=[];
+  renderLog();
+  toast('לוג נוקה ✅');
 }
 
 // ══ SETTINGS ══
@@ -1772,6 +1858,9 @@ window._dbSaveFaults=async(items)=>{
 window._dbSaveNotes=async(items)=>{
   try{await Promise.all(items.map(n=>setDoc(doc(db,'notes',n.id),n)));}catch(e){console.error('saveNotes:',e);}
 };
+window._dbLogAdd=async(entry)=>{
+  try{await setDoc(doc(db,'log',entry.id),entry);}catch(e){console.error('logAdd:',e);}
+};
 window._dbSaveCfg=async(cfg)=>{
   try{await setDoc(doc(db,'settings','main'),cfg);}catch(e){console.error('saveCfg:',e);}
   localStorage.setItem('crm_cfg',JSON.stringify(cfg));
@@ -1813,11 +1902,12 @@ async function loadAll(){
   },7000);
 
   try{
-    const[cs,fs,ns,ws,ss]=await Promise.all([
+    const[cs,fs,ns,ws,ls,ss]=await Promise.all([
       getDocs(collection(db,'customers')),
       getDocs(collection(db,'faults')),
       getDocs(collection(db,'notes')),
       getDocs(collection(db,'whatsapp')),
+      getDocs(collection(db,'log')),
       getDocs(collection(db,'settings'))
     ]);
     clearTimeout(timeout);
@@ -1831,6 +1921,7 @@ async function loadAll(){
     window.faults=fs.docs.map(d=>d.data());
     window.notes=ns.docs.map(d=>d.data());
     window.waMessages=ws.docs.map(d=>d.data());
+    window.logEntries=ls.docs.map(d=>d.data());
     hideLoader();
     // תיקון אוטומטי — אחריות 2 → 0 לכל הלקוחות הקיימים
     const warNeedsFix=window.custs.filter(c=>c.warrantyYears==='2'||c.warrantyYears===2);
@@ -1888,6 +1979,11 @@ async function loadAll(){
       window.notes=snap.docs.map(d=>d.data());
       if(document.getElementById('pg-notes').classList.contains('on'))renderNotes();
       renderDash();
+    });
+
+    onSnapshot(collection(db,'log'),snap=>{
+      window.logEntries=snap.docs.map(d=>d.data());
+      if(document.getElementById('pg-log').classList.contains('on'))renderLog();
     });
 
     onSnapshot(doc(db,'settings','main'),snap=>{
