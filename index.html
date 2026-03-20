@@ -384,7 +384,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
         <div id="mc-addresses-list" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
       <div><label class="flbl">תאריך התקנה</label><input class="finp" id="mc-install" type="date"></div>
-      <div><label class="flbl">שנות אחריות</label><input class="finp" id="mc-warr" type="number" value="2" min="0" max="20"></div>
+      <div><label class="flbl">שנות אחריות</label><input class="finp" id="mc-warr" type="number" value="0" min="0" max="20"></div>
       <div><label class="flbl">סוג פרויקט</label><input class="finp" id="mc-project" placeholder="מצלמות / אינטרקום..."></div>
       <div><label class="flbl">ציוד</label><input class="finp" id="mc-equip"></div>
       <div><label class="flbl">חוב (₪)</label><input class="finp" id="mc-debt" type="number" value="0" min="0" placeholder="0"></div>
@@ -691,10 +691,19 @@ function renderDash(){
       +`<span style="color:var(--tx3)">›</span></div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ הכל תקין</div>';
   const pd=window.custs.filter(c=>c.debt>0);
-  document.getElementById('pan-debts').innerHTML=pd.length
-    ?pd.map(c=>`<div class="ai danger" onclick="jumpTo('${c.id}')">`
-      +`<span>💰</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${c.name}</div>`
-      +`<div style="font-size:11px;color:var(--tx3)">₪${c.debt.toLocaleString('he-IL')}</div></div>`
+  const pdu=window.faults.filter(f=>f.amount>0&&f.paid!=='yes');
+  const pdAll=[
+    ...pd.map(c=>({name:c.name,amount:c.debt,phone:c.phone,onclick:`jumpTo('${c.id}')`})),
+    ...pdu.map(f=>{
+      const c=f.custId?window.custs.find(x=>x.id===f.custId):null;
+      const name=c?c.name:(f.guestName||'לקוח מזדמן');
+      return{name,amount:parseFloat(f.amount),desc:(f.desc||'').slice(0,25),onclick:`nav('debts')`};
+    })
+  ];
+  document.getElementById('pan-debts').innerHTML=pdAll.length
+    ?pdAll.map(x=>`<div class="ai danger" onclick="${x.onclick}">`
+      +`<span>💰</span><div style="flex:1"><div style="font-weight:600;font-size:13px">${x.name}</div>`
+      +`<div style="font-size:11px;color:var(--tx3)">₪${x.amount.toLocaleString('he-IL')}${x.desc?' — '+x.desc:''}</div></div>`
       +`<span style="color:var(--tx3)">›</span></div>`).join('')
     :'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">✅ אין חובות</div>';
   const pf=window.faults.filter(f=>f.status!=='done');
@@ -780,7 +789,7 @@ function openNewCust(){
   document.getElementById('mc-del').style.display='none';
   ['name','phone','email','city','address','project','equip','notes','debt-desc'].forEach(f=>{const e=document.getElementById('mc-'+f);if(e)e.value=''});
   document.getElementById('mc-install').value='';
-  document.getElementById('mc-warr').value='2';
+  document.getElementById('mc-warr').value='0';
   document.getElementById('mc-debt').value='0';
   document.getElementById('mc-contacts-list').innerHTML='';
   document.getElementById('mc-addresses-list').innerHTML='';
@@ -797,7 +806,7 @@ function editCustById(id){
   document.getElementById('mc-city').value=c.city||'';
   document.getElementById('mc-address').value=c.address||'';
   document.getElementById('mc-install').value=c.installDate||'';
-  document.getElementById('mc-warr').value=c.warrantyYears||'2';
+  document.getElementById('mc-warr').value=c.warrantyYears||'0';
   document.getElementById('mc-project').value=c.projectType||'';
   document.getElementById('mc-equip').value=c.equipment||'';
   document.getElementById('mc-debt').value=c.debt||0;
@@ -1817,18 +1826,19 @@ async function loadAll(){
     if(cfgDoc){Object.assign(window.cfg,cfgDoc.data());localStorage.setItem('crm_cfg',JSON.stringify(window.cfg));}
 
     const remoteCusts=cs.docs.map(d=>{const data=d.data();return{...data,debt:Math.max(0,Number(data.debt)||0)};});
-    if(remoteCusts.length===0){
-      loader('מעלה לקוחות לענן...');
-      await Promise.all(window.SEED_CUSTS.map(c=>setDoc(doc(db,'customers',c.id),c)));
-      window.custs=[...window.SEED_CUSTS];
-    }else{
-      window.custs=remoteCusts;
-    }
+    // אם אין לקוחות ב-Firestore — רק טען רשימה ריקה, אל תדרוס
+    window.custs=remoteCusts;
     window.faults=fs.docs.map(d=>d.data());
     window.notes=ns.docs.map(d=>d.data());
     window.waMessages=ws.docs.map(d=>d.data());
     hideLoader();
-    // תיקון אוטומטי — כתוב חזרה לקוחות שה-debt שלהם היה string
+    // תיקון אוטומטי — אחריות 2 → 0 לכל הלקוחות הקיימים
+    const warNeedsFix=window.custs.filter(c=>c.warrantyYears==='2'||c.warrantyYears===2);
+    if(warNeedsFix.length>0){
+      warNeedsFix.forEach(c=>{ c.warrantyYears='0'; });
+      window._dbSaveCusts(window.custs).catch(()=>{});
+    }
+    // תיקון debt string
     cs.docs.forEach(d=>{
       const raw=d.data().debt;
       if(typeof raw==='string'&&raw!==''&&raw!=='0'){
