@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="וידאו דיזיין">
 <meta name="theme-color" content="#0a0e1a">
 <title>לקוחות וידאו דיזיין</title>
@@ -836,12 +838,24 @@ function jumpTo(id){nav('customers');setTimeout(()=>{if(id)viewCust(id);},100)}
 
 function openWA(phone){
   const clean=phone.replace(/[\s\-\(\)]/g,'').replace(/^\+/,'').replace(/^0/,'972');
-  window.open('https://wa.me/'+clean,'_blank');
+  const link=document.createElement('a');
+  link.href='https://wa.me/'+clean;
+  link.target='_blank';
+  link.rel='noopener noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(()=>link.remove(),300);
 }
 
 function openNav(encodedAddr){
   const addr=decodeURIComponent(encodedAddr);
-  window.open('https://waze.com/ul?q='+encodeURIComponent(addr)+'&navigate=yes','_blank');
+  const link=document.createElement('a');
+  link.href='https://waze.com/ul?q='+encodeURIComponent(addr)+'&navigate=yes';
+  link.target='_blank';
+  link.rel='noopener noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(()=>link.remove(),300);
 }
 
 function openGlobalSearch(){
