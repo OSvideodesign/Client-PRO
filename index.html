@@ -88,6 +88,13 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
 #mnav .mns{display:flex;height:100%;align-items:stretch}
 .mnb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--tx2);font-family:'Heebo',sans-serif;font-size:10px;cursor:pointer;padding:4px;transition:color .15s}
 .mnb.on{color:var(--acc)}
+#m-drawer{display:none;position:fixed;inset:0;z-index:500}
+#m-drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+#m-drawer-panel{position:absolute;top:0;right:0;width:240px;height:100%;background:var(--sur);border-left:1px solid var(--brd);overflow-y:auto;padding:20px 0 40px;display:flex;flex-direction:column}
+#m-drawer.open{display:block}
+.m-drawer-btn{display:block;width:100%;text-align:right;padding:12px 20px;background:none;border:none;color:var(--tx2);font-family:'Heebo',sans-serif;font-size:15px;cursor:pointer;transition:background .15s}
+.m-drawer-btn:hover,.m-drawer-btn.on{background:var(--sur2);color:var(--acc)}
+.m-drawer-sec{font-size:11px;color:var(--tx3);padding:14px 20px 4px;font-weight:700;letter-spacing:.5px}
 @media(max-width:768px){
   .sidebar{display:none}.main{margin-right:0;margin-left:0;width:100%;padding:12px 12px 76px}
   #mnav{display:block}.stats{grid-template-columns:1fr 1fr;gap:8px}
@@ -96,7 +103,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
   .fgrid{grid-template-columns:1fr}.finp{font-size:16px}.fg-grid{grid-template-columns:1fr}
   .ph{flex-direction:column;align-items:flex-start}.pt{font-size:18px}
 }
-@media(min-width:769px){#mnav{display:none!important}}
+@media(min-width:769px){#mnav{display:none!important}#m-drawer{display:none!important}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .fc-cb{position:absolute;top:10px;left:10px;width:20px;height:20px;cursor:pointer;accent-color:var(--acc);display:none}
 .select-mode .fc-cb{display:block}
@@ -128,12 +135,50 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
   <button class="mnb" onclick="nav('dashboard')"><span style="font-size:20px">🏠</span>ראשי</button>
   <button class="mnb" onclick="nav('customers')"><span style="font-size:20px">👥</span>לקוחות</button>
   <button class="mnb" onclick="nav('faults')"><span style="font-size:20px">🔧</span>משימות</button>
-  <button class="mnb" onclick="nav('warranties')"><span style="font-size:20px">🛡️</span>אחריות</button>
-  <button class="mnb" onclick="nav('debts')"><span style="font-size:20px">💰</span>חובות</button>
   <button class="mnb" onclick="nav('notes')"><span style="font-size:20px">📝</span>הערות</button>
+  <button class="mnb" onclick="openDrawer()"><span style="font-size:20px">☰</span>עוד</button>
 </div></div>
 
+<!-- Drawer - תפריט צד מובייל -->
+<div id="m-drawer">
+  <div id="m-drawer-bg" onclick="closeDrawer()"></div>
+  <div id="m-drawer-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 16px;border-bottom:1px solid var(--brd)">
+      <span style="font-weight:700;font-size:15px">תפריט</span>
+      <button onclick="closeDrawer()" style="background:none;border:none;color:var(--tx3);font-size:22px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div class="m-drawer-sec">ניהול</div>
+    <button class="m-drawer-btn" onclick="navD('dashboard')">📊 לוח בקרה</button>
+    <button class="m-drawer-btn" onclick="navD('customers')">👥 לקוחות</button>
+    <button class="m-drawer-btn" onclick="navD('faults')">🔧 משימות</button>
+    <button class="m-drawer-btn" onclick="navD('archive')">✅ ארכיון</button>
+    <div class="m-drawer-sec">דוחות</div>
+    <button class="m-drawer-btn" onclick="navD('warranties')">🛡️ אחריות</button>
+    <button class="m-drawer-btn" onclick="navD('debts')">💰 חובות</button>
+    <button class="m-drawer-btn" onclick="navD('notes')">📝 הערות</button>
+    <div class="m-drawer-sec">מערכת</div>
+    <button class="m-drawer-btn" onclick="navD('settings')">⚙️ הגדרות</button>
+    <button class="m-drawer-btn" id="m-drawer-log" style="display:none" onclick="navD('log')">📋 לוג שינויים</button>
+    <button class="m-drawer-btn" onclick="openGlobalSearch();closeDrawer()" style="color:var(--acc)">🔍 חיפוש גלובלי</button>
+    <button class="m-drawer-btn" onclick="logout()" style="color:var(--red);margin-top:8px">🚪 התנתק</button>
+  </div>
+</div>
+
 <div id="toast"></div>
+
+<!-- חיפוש גלובלי -->
+<div class="modal" id="M-gsearch">
+  <div class="mbox" style="max-width:640px">
+    <div class="mhd">
+      <h2>🔍 חיפוש גלובלי</h2>
+      <button class="xbtn" onclick="closeM('M-gsearch')">✕</button>
+    </div>
+    <div class="mbody">
+      <input class="finp" id="gs-inp" placeholder="חפש לקוח, משימה או הערה..." oninput="runGlobalSearch()" autofocus>
+      <div id="gs-results" style="margin-top:14px"></div>
+    </div>
+  </div>
+</div>
 
 <aside class="sidebar">
   <div class="logo">
@@ -141,6 +186,11 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <div id="user-badge" style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700"></div>
   </div>
   <nav class="nav">
+    <div style="padding:8px 0 12px">
+      <button onclick="openGlobalSearch()" style="width:100%;background:var(--sur2);border:1px solid var(--brd2);border-radius:8px;padding:8px 12px;color:var(--tx3);font-size:13px;font-family:Heebo,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px">
+        <span>🔍</span><span>חיפוש גלובלי...</span>
+      </button>
+    </div>
     <div class="nav-sec">ניהול</div>
     <button class="nav-btn on" id="nb-dashboard" onclick="nav('dashboard')">📊 לוח בקרה</button>
     <button class="nav-btn" id="nb-customers" onclick="nav('customers')">👥 לקוחות</button>
@@ -666,7 +716,13 @@ function applyUser(u){
   // הצג לוג רק לרז
   const logBtn=document.getElementById('nb-log');
   if(logBtn) logBtn.style.display=u.name==='רז'?'':'none';
+  const logBtnD=document.getElementById('m-drawer-log');
+  if(logBtnD) logBtnD.style.display=u.name==='רז'?'':'none';
 }
+
+function openDrawer(){document.getElementById('m-drawer').classList.add('open');}
+function closeDrawer(){document.getElementById('m-drawer').classList.remove('open');}
+function navD(page){closeDrawer();nav(page);}
 function backToUsers(){
   _loginTarget=null;
   document.getElementById('pass-area').style.display='none';
@@ -778,6 +834,68 @@ function renderDash(){
 }
 function jumpTo(id){nav('customers');setTimeout(()=>{if(id)viewCust(id);},100)}
 
+function openWA(phone){
+  const clean=phone.replace(/[\s\-\(\)]/g,'').replace(/^\+/,'').replace(/^0/,'972');
+  window.open('https://wa.me/'+clean,'_blank');
+}
+
+function openNav(encodedAddr){
+  const addr=decodeURIComponent(encodedAddr);
+  window.open('https://waze.com/ul?q='+encodeURIComponent(addr)+'&navigate=yes','_blank');
+}
+
+function openGlobalSearch(){
+  openM('M-gsearch');
+  setTimeout(()=>{const i=document.getElementById('gs-inp');if(i){i.value='';i.focus();}document.getElementById('gs-results').innerHTML='';},100);
+}
+
+function runGlobalSearch(){
+  const q=(document.getElementById('gs-inp').value||'').trim().toLowerCase();
+  const el=document.getElementById('gs-results');
+  if(!q||q.length<2){el.innerHTML='';return;}
+
+  const results=[];
+
+  // לקוחות
+  window.custs.forEach(c=>{
+    if((c.name||'').toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.city||'').toLowerCase().includes(q)||(c.address||'').toLowerCase().includes(q)){
+      results.push({type:'customer',icon:'👤',title:c.name,sub:(c.phone||'')+(c.city?' | '+c.city:''),action:()=>{closeM('M-gsearch');jumpTo(c.id);}});
+    }
+  });
+
+  // משימות
+  window.faults.forEach(f=>{
+    const c=f.custId?window.custs.find(x=>x.id===f.custId):null;
+    const name=c?c.name:(f.guestName||'לקוח מזדמן');
+    if((f.desc||'').toLowerCase().includes(q)||(name).toLowerCase().includes(q)||(f.notes||'').toLowerCase().includes(q)){
+      results.push({type:'fault',icon:'🔧',title:f.desc||'משימה',sub:name+(f.status==='done'?' | ✅ טופל':' | פתוחה'),action:()=>{closeM('M-gsearch');f.status==='done'?nav('archive'):nav('faults');}});
+    }
+  });
+
+  // הערות
+  window.notes.forEach(n=>{
+    if((n.text||'').toLowerCase().includes(q)||(n.owner||'').toLowerCase().includes(q)){
+      results.push({type:'note',icon:'📝',title:(n.text||'').slice(0,60),sub:n.owner||'',action:()=>{closeM('M-gsearch');nav('notes');setTimeout(()=>editNoteById(n.id),200);}});
+    }
+  });
+
+  if(!results.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--tx3)">אין תוצאות</div>';return;}
+
+  el.innerHTML=results.slice(0,15).map((r,i)=>`
+    <div onclick="gsClick(${i})" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sur2);border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid var(--brd2)" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--brd2)'">
+      <span style="font-size:18px">${r.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.title}</div>
+        <div style="font-size:11px;color:var(--tx3)">${r.sub}</div>
+      </div>
+      <span style="color:var(--tx3)">›</span>
+    </div>`).join('');
+
+  window._gsResults=results;
+}
+
+function gsClick(i){if(window._gsResults&&window._gsResults[i])window._gsResults[i].action();}
+
 // ══ CUSTOMERS ══
 function renderCusts(){
   const q=(document.getElementById('q-custs').value||'').toLowerCase();
@@ -808,7 +926,9 @@ function renderCusts(){
       +`<td style="white-space:nowrap">`
       +`<button class="btn bs btn-sm" onclick="viewCust('${c.id}')">👁️</button> `
       +`<button class="btn bs btn-sm" onclick="editCustById('${c.id}')">✏️</button> `
-      +`<button class="btn bs btn-sm" onclick="openNewFault('${c.id}')">🔧</button>`
+      +`<button class="btn bs btn-sm" onclick="openNewFault('${c.id}')">🔧</button> `
+      +(c.phone?`<button class="btn bs btn-sm" onclick="openWA('${c.phone}')" title="WhatsApp">💬</button> `:'')
+      +(c.address?`<button class="btn bs btn-sm" onclick="openNav('${encodeURIComponent(c.address+(c.city?' '+c.city:''))}')" title="ניווט">🗺️</button>`:'')
       +`</td></tr>`;
   }).join('');
 }
@@ -933,11 +1053,11 @@ function viewCust(id){
   document.getElementById('Mv-name').textContent=c.name;
   document.getElementById('Mv-body').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
-      ${c.phone?`<div><div class="flbl">טלפון</div><a href="tel:${c.phone}" style="color:var(--acc)">${c.phone}</a></div>`:''}
+      ${c.phone?`<div><div class="flbl">טלפון</div><div style="display:flex;align-items:center;gap:8px"><a href="tel:${c.phone}" style="color:var(--acc)">${c.phone}</a><button class="btn bs btn-sm" onclick="openWA('${c.phone}')">💬 WhatsApp</button></div></div>`:''}
       ${c.email?`<div><div class="flbl">מייל</div><div>${c.email}</div></div>`:''}
       ${c.city?`<div><div class="flbl">עיר</div><div>${c.city}</div></div>`:''}
-      ${c.address?`<div style="grid-column:1/-1"><div class="flbl">כתובת ראשית</div><div>${c.address}</div></div>`:''}
-      ${(c.extraAddresses&&c.extraAddresses.length)?`<div style="grid-column:1/-1"><div class="flbl">כתובות נוספות</div>${c.extraAddresses.map(a=>`<div style="padding:4px 0;font-size:13px">📍 ${a}</div>`).join('')}</div>`:''}
+      ${c.address?`<div style="grid-column:1/-1"><div class="flbl">כתובת ראשית</div><div style="display:flex;align-items:center;gap:8px"><span>${c.address}</span><button class="btn bs btn-sm" onclick="openNav('${encodeURIComponent(c.address+(c.city?' '+c.city:''))}')">🗺️ ניווט</button></div></div>`:''}
+      ${(c.extraAddresses&&c.extraAddresses.length)?`<div style="grid-column:1/-1"><div class="flbl">כתובות נוספות</div>${c.extraAddresses.map(a=>`<div style="padding:4px 0;font-size:13px;display:flex;align-items:center;gap:8px">📍 ${a}<button class="btn bs btn-sm" onclick="openNav('${encodeURIComponent(a+(c.city?' '+c.city:''))}')">🗺️</button></div>`).join('')}</div>`:''}
       ${c.installDate?`<div><div class="flbl">התקנה</div><div>${fmtD(c.installDate)}</div></div>`:''}
       ${c.warrantyYears?`<div><div class="flbl">אחריות</div><div>${c.warrantyYears} שנים ${s?`<span class="badge ${s.cls}">${s.lbl}</span>`:''}</div></div>`:''}
       ${c.projectType?`<div><div class="flbl">פרויקט</div><div>${c.projectType}</div></div>`:''}
@@ -952,13 +1072,37 @@ function viewCust(id){
               <div style="font-weight:600;font-size:13px">${ct.name||''}${ct.role?` <span style="font-size:11px;color:var(--tx3);font-weight:400">— ${ct.role}</span>`:''}</div>
               <div style="display:flex;gap:12px;margin-top:3px;flex-wrap:wrap">
                 ${ct.phone?`<a href="tel:${ct.phone}" style="color:var(--acc);font-size:12px">📞 ${ct.phone}</a>`:''}
+                ${ct.phone?`<button class="btn bs btn-sm" style="font-size:11px" onclick="openWA('${ct.phone}')">💬</button>`:''}
                 ${ct.email?`<a href="mailto:${ct.email}" style="color:var(--cya);font-size:12px">✉️ ${ct.email}</a>`:''}
               </div>
             </div>
           </div>`).join('')}
       </div>`:''}
     </div>`;
+
+  // היסטוריית משימות
+  const custFaults=window.faults.filter(f=>f.custId===id).sort((a,b)=>(b.created||'').localeCompare(a.created||''));
+  if(custFaults.length){
+    const SMAP={open:'🔵 פתוחה',scheduled:'📅 נקבע',done:'✅ טופל'};
+    document.getElementById('Mv-body').innerHTML+=`
+      <div style="margin-top:16px;border-top:1px solid var(--brd);padding-top:14px">
+        <div class="flbl" style="margin-bottom:10px">🔧 היסטוריית משימות (${custFaults.length})</div>
+        ${custFaults.map(f=>`
+          <div style="padding:8px 10px;background:var(--sur2);border-radius:8px;margin-bottom:6px;border-right:3px solid ${f.status==='done'?'var(--grn)':f.status==='scheduled'?'var(--yel)':'var(--acc)'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div style="font-size:13px;font-weight:600;flex:1">${f.desc||''}</div>
+              <span style="font-size:11px;color:var(--tx3);white-space:nowrap;margin-right:8px">${SMAP[f.status]||f.status}</span>
+            </div>
+            <div style="font-size:11px;color:var(--tx3);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">
+              ${f.created?`<span>📅 ${fmtD(f.created)}</span>`:''}
+              ${f.amount>0?`<span>💰 ₪${parseFloat(f.amount).toLocaleString('he-IL')} — ${f.paid==='yes'?'✅ שולם':f.paid==='partial'?'⚠️ חלקי':'❌ לא שולם'}</span>`:''}
+              ${f.updatedBy?`<span>✏️ ${f.updatedBy}</span>`:''}
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }
   document.getElementById('Mv-del').onclick=async()=>{
+    const delName=window.custs.find(x=>x.id===id)?.name||id;
     if(!confirm('למחוק?'))return;
     closeM('M-view');toast('מוחק...');
     if(window._dbDel){
@@ -966,6 +1110,7 @@ function viewCust(id){
       if(!ok){toast('שגיאה במחיקה','err');return;}
     }
     window.custs=window.custs.filter(x=>x.id!==id);
+    addLog('customer','מחיקת לקוח',delName);
     renderCusts();renderDash();toast('לקוח נמחק ✅');
   };
   document.getElementById('Mv-edit').onclick=()=>{closeM('M-view');editCustById(id)};
