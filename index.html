@@ -2002,7 +2002,7 @@ const VAPID_KEY = 'BERH6ce2DPqX2TbbnEhqqWmiOzhVuWbf5I7HOdfq_S8aKa3d_OgW3FCsta5GH
 async function initPush(){
   try{
     if(!('serviceWorker' in navigator)||!('Notification' in window)) return;
-    const reg = await navigator.serviceWorker.register('/Client-PRO/sw.js');
+    const reg = await navigator.serviceWorker.register('./sw.js');
     const perm = await Notification.requestPermission();
     if(perm !== 'granted') return;
     if(typeof firebase==='undefined'||!firebase.apps.length) return;
@@ -2019,6 +2019,7 @@ async function initPush(){
 }
 
 function sendLocalNotif(title, body){
+  // Show local notification on this device
   if(Notification.permission === 'granted'){
     new Notification(title, {
       body, icon:'https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD',
@@ -2026,6 +2027,15 @@ function sendLocalNotif(title, body){
     });
   }
   toast('🔔 ' + title);
+  // שלח ל-Cloudflare Worker שישלח לכל המכשירים
+  fetch('https://vd-push-worker.videodesign.workers.dev', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      title, message: body,
+      sentBy: window._currentUser||'מערכת'
+    })
+  }).then(r=>r.json()).then(d=>console.log('Push sent:',d)).catch(e=>console.log('Push error:',e));
 }
 
 function scheduleReminder(custName, date, time){
@@ -2087,6 +2097,11 @@ window._dbLogAdd=async(entry)=>{
 window._dbSaveCfg=async(cfg)=>{
   try{await setDoc(doc(db,'settings','main'),cfg);}catch(e){console.error('saveCfg:',e);}
   localStorage.setItem('crm_cfg',JSON.stringify(cfg));
+};
+window._dbSaveNotif=async(notif)=>{
+  try{
+    await setDoc(doc(db,'notifications',notif.id),notif);
+  }catch(e){console.error('saveNotif:',e);}
 };
 window._dbSavePushToken=async(userName,token)=>{
   try{await setDoc(doc(db,'push_tokens',userName),{token,userName,updatedAt:new Date().toISOString()});}
