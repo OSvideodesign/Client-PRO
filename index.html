@@ -646,8 +646,8 @@ let _eCust=null, _eFault=null;
 const USERS=[
   {"name":"אופיר","pass":"ophir4123","color":"#3b82f6","role":"admin"},
   {"name":"רז",  "pass":"Raz4123",  "color":"#f1f5f9","role":"admin"},
-  {"name":"גלאל","pass":"Jalal4123","color":"#10b981","role":"tech"},
-  {"name":"מוטי","pass":"Moti4123", "color":"#06b6d4","role":"tech"}
+  {"name":"גלאל","pass":"Jalal4123","color":"#10b981","role":"admin"},
+  {"name":"מוטי","pass":"Moti4123", "color":"#06b6d4","role":"admin"}
 ];
 window._currentUser=null;
 window._currentColor='#3b82f6';
@@ -1369,11 +1369,16 @@ function saveFault(){
   // Push notification
   const _notifCust = window.custs.find(c=>c.id===f.custId);
   const _notifName = _notifCust?_notifCust.name:(f.guestName||'לקוח');
-  if(!_eFault) sendLocalNotif('🔧 משימה חדשה', _notifName+' — '+(f.desc||'').slice(0,50));
-  else if(f.status==='done') sendLocalNotif('✅ משימה טופלה', _notifName+' — '+(f.desc||'').slice(0,50));
-  else if(f.status==='scheduled'&&f.date){{
-    sendLocalNotif('📅 פגישה נקבעה', _notifName+' — '+fmtD(f.date)+(f.time?' '+f.time:''));
+  const _tIcon={fault:'🔧',service:'🛠️',installation:'📦',other:'📋',general:'📋',meeting:'📅'}[f.type||'fault']||'🔧';
+  if(!_eFault){
+    sendLocalNotif(_tIcon+' משימה חדשה — '+_notifName, (f.desc||'').slice(0,60));
+  } else if(f.status==='done'){
+    sendLocalNotif('✅ טופלה — '+_notifName, (f.desc||'').slice(0,60));
+  } else if(f.status==='scheduled'&&f.date){{
+    sendLocalNotif('📅 פגישה — '+_notifName, fmtD(f.date)+(f.time?' '+f.time:''));
     scheduleReminder(_notifName, f.date, f.time);
+  }} else if(_eFault){{
+    sendLocalNotif(_tIcon+' עודכן — '+_notifName, (f.desc||'').slice(0,60));
   }}
     if(!_eFault) sendFaultNotification(f);
     if(f.date&&f.status==='scheduled'){
@@ -2043,12 +2048,12 @@ function sendLocalNotif(title, body){
 function scheduleReminder(custName, date, time){
   if(!date||!time) return;
   const meetTime = new Date(date+'T'+time+':00');
-  const remTime = new Date(meetTime.getTime() - 60*60*1000);
-  const delay = remTime.getTime() - Date.now();
-  if(delay > 0 && delay < 24*60*60*1000){
-    setTimeout(()=>sendLocalNotif('⏰ תזכורת — עוד שעה!', custName+' — '+fmtD(date)+' '+time), delay);
-    console.log('Reminder in', Math.round(delay/60000), 'min');
-  }
+  const now = new Date();
+  const delay1h = meetTime.getTime()-60*60*1000-now.getTime();
+  const delay15m = meetTime.getTime()-15*60*1000-now.getTime();
+  if(delay1h>0) setTimeout(()=>sendLocalNotif('⏰ תזכורת — עוד שעה!', custName+' — '+fmtD(date)+' '+time), delay1h);
+  if(delay15m>0) setTimeout(()=>sendLocalNotif('🚨 עוד 15 דקות!', custName+' — '+fmtD(date)+' '+time), delay15m);
+  if(delay1h>0||delay15m>0) console.log('⏰ תזכורות נקבעו:', custName);
 }
 
 </script>
