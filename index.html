@@ -2019,8 +2019,17 @@ async function initPush(){
     if(newPerm !== 'granted') return;
     
     console.log('Checking Firebase...');
-    if(typeof firebase==='undefined'){console.log('Firebase not loaded');return;}
-    if(!firebase.apps.length){console.log('Firebase not initialized');return;}
+    // Wait for Firebase module to be ready (max 10 seconds)
+    let waited = 0;
+    while((typeof firebase==='undefined'||!firebase.apps||!firebase.apps.length) && waited < 10000){
+      await new Promise(r=>setTimeout(r,500));
+      waited+=500;
+      console.log('Waiting for Firebase...', waited+'ms');
+    }
+    if(typeof firebase==='undefined'||!firebase.apps||!firebase.apps.length){
+      console.log('❌ Firebase never loaded');return;
+    }
+    console.log('✅ Firebase ready after',waited,'ms');
     
     console.log('Getting FCM token...');
     const messaging = firebase.messaging();
