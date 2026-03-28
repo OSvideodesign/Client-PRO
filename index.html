@@ -7,10 +7,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="וידאו דיזיין">
-<meta name="theme-color" content="#0a0e1a">
+<meta name="theme-color" content="#3b82f6">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD">
+<link rel="manifest" href="manifest.json">
 <title>לקוחות וידאו דיזיין</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-messaging-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Heebo',sans-serif;background:#0a0e1a;color:#f1f5f9;min-height:100vh;direction:rtl}
@@ -712,6 +717,7 @@ function doLogin(){
 }
 function applyUser(u){
   window._currentUser=u.name;window._currentColor=u.color;
+  setTimeout(initPush, 1500);
   document.getElementById('login-screen').style.display='none';
   const b=document.getElementById('user-badge');
   if(b){b.textContent=u.name;b.style.background=u.color+'22';b.style.color=u.color;b.style.border='1px solid '+u.color+'44';}
@@ -1361,6 +1367,15 @@ function saveFault(){
   } else {
     renderFaults();renderDash();
     toast(_eFault?'משימה עודכנה ✅':'משימה נוספה ✅');
+  // Push notification
+  const _notifCust = window.custs.find(c=>c.id===f.custId);
+  const _notifName = _notifCust?_notifCust.name:(f.guestName||'לקוח');
+  if(!_eFault) sendLocalNotif('🔧 משימה חדשה', _notifName+' — '+(f.desc||'').slice(0,50));
+  else if(f.status==='done') sendLocalNotif('✅ משימה טופלה', _notifName+' — '+(f.desc||'').slice(0,50));
+  else if(f.status==='scheduled'&&f.date){{
+    sendLocalNotif('📅 פגישה נקבעה', _notifName+' — '+fmtD(f.date)+(f.time?' '+f.time:''));
+    scheduleReminder(_notifName, f.date, f.time);
+  }}
     if(!_eFault) sendFaultNotification(f);
     if(f.date&&f.status==='scheduled'){
       setTimeout(()=>{if(confirm('לפתוח Google Calendar?'))gcalFault(f.id);},400);
@@ -1981,6 +1996,49 @@ function gcalFault(id){
   initLogin();
 })();
 
+// ══ PWA + PUSH NOTIFICATIONS ══
+const VAPID_KEY = 'BERH6ce2DPqX2TbbnEhqqWmiOzhVuWbf5I7HOdfq_S8aKa3d_OgW3FCsta5GH_VzGk268EnRkcvryjt7jGAXhwM';
+
+async function initPush(){
+  try{
+    if(!('serviceWorker' in navigator)||!('Notification' in window)) return;
+    const reg = await navigator.serviceWorker.register('/Client-PRO/sw.js');
+    const perm = await Notification.requestPermission();
+    if(perm !== 'granted') return;
+    if(typeof firebase==='undefined'||!firebase.apps.length) return;
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
+    if(token && window._dbSavePushToken) window._dbSavePushToken(window._currentUser||'unknown', token);
+    console.log('✅ Push initialized');
+    // Handle foreground messages
+    messaging.onMessage(payload=>{
+      const n = payload.notification||{};
+      toast('🔔 ' + (n.title||'') + ' — ' + (n.body||''));
+    });
+  }catch(e){ console.log('Push init:', e.message); }
+}
+
+function sendLocalNotif(title, body){
+  if(Notification.permission === 'granted'){
+    new Notification(title, {
+      body, icon:'https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD',
+      dir:'rtl', lang:'he', tag:'vd-notif', renotify:true
+    });
+  }
+  toast('🔔 ' + title);
+}
+
+function scheduleReminder(custName, date, time){
+  if(!date||!time) return;
+  const meetTime = new Date(date+'T'+time+':00');
+  const remTime = new Date(meetTime.getTime() - 60*60*1000);
+  const delay = remTime.getTime() - Date.now();
+  if(delay > 0 && delay < 24*60*60*1000){
+    setTimeout(()=>sendLocalNotif('⏰ תזכורת — עוד שעה!', custName+' — '+fmtD(date)+' '+time), delay);
+    console.log('Reminder in', Math.round(delay/60000), 'min');
+  }
+}
+
 </script>
 <script type="module">
 
@@ -2029,6 +2087,10 @@ window._dbLogAdd=async(entry)=>{
 window._dbSaveCfg=async(cfg)=>{
   try{await setDoc(doc(db,'settings','main'),cfg);}catch(e){console.error('saveCfg:',e);}
   localStorage.setItem('crm_cfg',JSON.stringify(cfg));
+};
+window._dbSavePushToken=async(userName,token)=>{
+  try{await setDoc(doc(db,'push_tokens',userName),{token,userName,updatedAt:new Date().toISOString()});}
+  catch(e){console.error('savePushToken:',e);}
 };
 window._dbDel=async(col,id)=>{
   try{
