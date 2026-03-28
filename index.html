@@ -14,8 +14,6 @@
 <title>לקוחות וידאו דיזיין</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-messaging-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Heebo',sans-serif;background:#0a0e1a;color:#f1f5f9;min-height:100vh;direction:rtl}
@@ -2005,58 +2003,21 @@ async function initPush(){
     console.log('🔔 initPush starting...');
     if(!('serviceWorker' in navigator)){console.log('No SW support');return;}
     if(!('Notification' in window)){console.log('No Notification support');return;}
-    
-    console.log('Registering SW...');
     const reg = await navigator.serviceWorker.register('./sw.js');
     console.log('SW registered:', reg.scope);
-    
-    const perm = Notification.permission;
-    console.log('Notification permission:', perm);
-    if(perm === 'denied'){console.log('Push blocked by user');return;}
-    
-    const newPerm = perm === 'granted' ? 'granted' : await Notification.requestPermission();
-    console.log('New permission:', newPerm);
-    if(newPerm !== 'granted') return;
-    
-    console.log('Checking Firebase...');
-    // Wait for Firebase module to be ready (max 10 seconds)
-    let waited = 0;
-    while((typeof firebase==='undefined'||!firebase.apps||!firebase.apps.length) && waited < 10000){
-      await new Promise(r=>setTimeout(r,500));
-      waited+=500;
-      console.log('Waiting for Firebase...', waited+'ms');
-    }
-    if(typeof firebase==='undefined'||!firebase.apps||!firebase.apps.length){
-      console.log('❌ Firebase never loaded');return;
-    }
-    console.log('✅ Firebase ready after',waited,'ms');
-    
-    console.log('Getting FCM token...');
-    const messaging = firebase.messaging();
-    const token = await messaging.getToken({vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
-    
+    const perm = Notification.permission==='granted'?'granted':await Notification.requestPermission();
+    if(perm!=='granted'){console.log('Push denied');return;}
+    // Wait for module to expose messaging (max 8 sec)
+    let w=0;
+    while(!window._fbGetToken && w<8000){await new Promise(r=>setTimeout(r,300));w+=300;}
+    if(!window._fbGetToken){console.log('❌ FCM not ready');return;}
+    const token = await window._fbGetToken(reg);
     if(token){
-      console.log('✅ Push token:', token.slice(0,30)+'...');
-      if(window._dbSavePushToken){
-        await window._dbSavePushToken(window._currentUser||'unknown', token);
-        console.log('✅ Token saved to Firebase!');
-      } else {
-        console.log('⚠️ _dbSavePushToken not ready yet, retrying...');
-        setTimeout(()=>{
-          if(window._dbSavePushToken) window._dbSavePushToken(window._currentUser||'unknown', token);
-        }, 3000);
-      }
-    } else {
-      console.log('⚠️ No token received');
+      console.log('✅ Token:', token.slice(0,20)+'...');
+      if(window._dbSavePushToken) await window._dbSavePushToken(window._currentUser||'unknown', token);
+      console.log('✅ Push initialized!');
     }
-    
-    // Handle foreground messages
-    messaging.onMessage(payload=>{
-      const n = payload.notification||{};
-      toast('🔔 ' + (n.title||'') + ' — ' + (n.body||''));
-    });
-    
-  }catch(e){ console.log('❌ Push init error:', e.message, e); }
+  }catch(e){console.log('❌ Push error:',e.message);}
 }
 
 function sendLocalNotif(title, body){
@@ -2144,6 +2105,17 @@ window._dbSaveNotif=async(notif)=>{
     await setDoc(doc(db,'notifications',notif.id),notif);
   }catch(e){console.error('saveNotif:',e);}
 };
+
+// FCM messaging setup inside module (has access to modular Firebase)
+import{getMessaging,getToken,onMessage}from'https://www.gstatic.com/firebasejs/10.11.0/firebase-messaging.js';
+const messaging=getMessaging(app);
+window._fbGetToken=async(swReg)=>{
+  return await getToken(messaging,{vapidKey:'BERH6ce2DPqX2TbbnEhqqWmiOzhVuWbf5I7HOdfq_S8aKa3d_OgW3FCsta5GH_VzGk268EnRkcvryjt7jGAXhwM',serviceWorkerRegistration:swReg});
+};
+onMessage(messaging,payload=>{
+  const n=payload.notification||{};
+  if(window.toast) window.toast('🔔 '+(n.title||'')+' — '+(n.body||''));
+});
 window._dbSavePushToken=async(userName,token)=>{
   try{await setDoc(doc(db,'push_tokens',userName),{token,userName,updatedAt:new Date().toISOString()});}
   catch(e){console.error('savePushToken:',e);}
