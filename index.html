@@ -717,7 +717,8 @@ function doLogin(){
 }
 function applyUser(u){
   window._currentUser=u.name;window._currentColor=u.color;
-  setTimeout(initPush, 1500);
+  // Wait for Firebase module to load before init push
+  setTimeout(initPush, 3000);
   document.getElementById('login-screen').style.display='none';
   const b=document.getElementById('user-badge');
   if(b){b.textContent=u.name;b.style.background=u.color+'22';b.style.color=u.color;b.style.border='1px solid '+u.color+'44';}
@@ -2001,21 +2002,52 @@ const VAPID_KEY = 'BERH6ce2DPqX2TbbnEhqqWmiOzhVuWbf5I7HOdfq_S8aKa3d_OgW3FCsta5GH
 
 async function initPush(){
   try{
-    if(!('serviceWorker' in navigator)||!('Notification' in window)) return;
+    console.log('🔔 initPush starting...');
+    if(!('serviceWorker' in navigator)){console.log('No SW support');return;}
+    if(!('Notification' in window)){console.log('No Notification support');return;}
+    
+    console.log('Registering SW...');
     const reg = await navigator.serviceWorker.register('./sw.js');
-    const perm = await Notification.requestPermission();
-    if(perm !== 'granted') return;
-    if(typeof firebase==='undefined'||!firebase.apps.length) return;
+    console.log('SW registered:', reg.scope);
+    
+    const perm = Notification.permission;
+    console.log('Notification permission:', perm);
+    if(perm === 'denied'){console.log('Push blocked by user');return;}
+    
+    const newPerm = perm === 'granted' ? 'granted' : await Notification.requestPermission();
+    console.log('New permission:', newPerm);
+    if(newPerm !== 'granted') return;
+    
+    console.log('Checking Firebase...');
+    if(typeof firebase==='undefined'){console.log('Firebase not loaded');return;}
+    if(!firebase.apps.length){console.log('Firebase not initialized');return;}
+    
+    console.log('Getting FCM token...');
     const messaging = firebase.messaging();
     const token = await messaging.getToken({vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
-    if(token && window._dbSavePushToken) window._dbSavePushToken(window._currentUser||'unknown', token);
-    console.log('✅ Push initialized');
+    
+    if(token){
+      console.log('✅ Push token:', token.slice(0,30)+'...');
+      if(window._dbSavePushToken){
+        await window._dbSavePushToken(window._currentUser||'unknown', token);
+        console.log('✅ Token saved to Firebase!');
+      } else {
+        console.log('⚠️ _dbSavePushToken not ready yet, retrying...');
+        setTimeout(()=>{
+          if(window._dbSavePushToken) window._dbSavePushToken(window._currentUser||'unknown', token);
+        }, 3000);
+      }
+    } else {
+      console.log('⚠️ No token received');
+    }
+    
     // Handle foreground messages
     messaging.onMessage(payload=>{
       const n = payload.notification||{};
       toast('🔔 ' + (n.title||'') + ' — ' + (n.body||''));
     });
-  }catch(e){ console.log('Push init:', e.message); }
+    
+  }catch(e){ console.log('❌ Push init error:', e.message, e); }
 }
 
 function sendLocalNotif(title, body){
