@@ -10,8 +10,8 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(data.title||'וידאו דיזיין',{
       body: data.body||'',
-      icon: 'https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD',
-      badge: 'https://via.placeholder.com/96x96/3b82f6/ffffff?text=VD',
+      icon: '/Client-PRO/icon.png',
+      badge: '/Client-PRO/icon.png',
       vibrate: [200,100,200],
       data: {url: data.url||'/Client-PRO/'},
       dir: 'rtl', lang: 'he',
@@ -53,7 +53,7 @@ messaging.onBackgroundMessage(payload=>{
   const n = payload.notification||{};
   return self.registration.showNotification(n.title||'וידאו דיזיין',{
     body: n.body||'',
-    icon: 'https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD',
+    icon: '/Client-PRO/icon.png',
     dir: 'rtl', lang: 'he', tag: 'vd-notif', renotify: true
   });
 });

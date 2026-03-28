@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="וידאו דיזיין">
 <meta name="theme-color" content="#3b82f6">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" href="https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD">
+<link rel="apple-touch-icon" href="/Client-PRO/icon.png">
 <link rel="manifest" href="manifest.json">
 <title>לקוחות וידאו דיזיין</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2022,7 +2022,7 @@ function sendLocalNotif(title, body){
   // Show local notification on this device
   if(Notification.permission === 'granted'){
     new Notification(title, {
-      body, icon:'https://via.placeholder.com/192x192/3b82f6/ffffff?text=VD',
+      body, icon:'/Client-PRO/icon.png',
       dir:'rtl', lang:'he', tag:'vd-notif', renotify:true
     });
   }
