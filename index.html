@@ -158,6 +158,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <button class="m-drawer-btn" onclick="navD('warranties')">🛡️ אחריות</button>
     <button class="m-drawer-btn" onclick="navD('debts')">💰 חובות</button>
     <button class="m-drawer-btn" onclick="navD('notes')">📝 הערות</button>
+    <button class="m-drawer-btn" id="m-drawer-reports" onclick="navD('reports')">📈 דוחות</button>
     <div class="m-drawer-sec">מערכת</div>
     <button class="m-drawer-btn" onclick="navD('settings')">⚙️ הגדרות</button>
     <button class="m-drawer-btn" id="m-drawer-log" style="display:none" onclick="navD('log')">📋 לוג שינויים</button>
@@ -202,6 +203,7 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <button class="nav-btn" id="nb-warranties" onclick="nav('warranties')">🛡️ אחריות</button>
     <button class="nav-btn" id="nb-debts" onclick="nav('debts')">💰 חובות</button>
     <button class="nav-btn" id="nb-notes" onclick="nav('notes')">📝 הערות</button>
+    <button class="nav-btn" id="nb-reports" onclick="nav('reports')">📈 דוחות</button>
     <div class="nav-sec">מערכת</div>
     <button class="nav-btn" id="nb-settings" onclick="nav('settings')">⚙️ הגדרות</button>
     <button class="nav-btn" id="nb-log" onclick="nav('log')" style="display:none">📋 לוג שינויים</button>
@@ -426,6 +428,37 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
     <thead><tr><th>תאריך ושעה</th><th>משתמש</th><th>פעולה</th><th>פרטים</th></tr></thead>
     <tbody id="tb-log"></tbody>
   </table></div></div>
+</div>
+
+<div class="pg" id="pg-reports">
+  <div class="ph"><div><div class="pt">📈 דוחות</div><div class="ps" id="cnt-reports"></div></div>
+    <button class="btn bs btn-sm" onclick="exportCustomersExcel()">📥 ייצוא לקוחות Excel</button>
+  </div>
+
+  <!-- סינון חודש -->
+  <div class="toolbar" style="margin-bottom:14px">
+    <select class="fsel" id="rep-month" onchange="renderReports()"></select>
+    <select class="fsel" id="rep-year" onchange="renderReports()"></select>
+  </div>
+
+  <!-- קוביות סיכום -->
+  <div class="stats" style="margin-bottom:16px" id="rep-stats"></div>
+
+  <!-- טכנאים -->
+  <div class="dash3" style="margin-bottom:16px">
+    <div class="tw">
+      <div class="panel-title">🔧 משימות לפי טכנאי</div>
+      <div id="rep-by-tech" class="panel-body"></div>
+    </div>
+    <div class="tw">
+      <div class="panel-title">💰 הכנסות לפי טכנאי</div>
+      <div id="rep-income-tech" class="panel-body"></div>
+    </div>
+    <div class="tw">
+      <div class="panel-title">📋 סטטוס משימות</div>
+      <div id="rep-status" class="panel-body"></div>
+    </div>
+  </div>
 </div>
 
 <div class="pg" id="pg-settings">
@@ -738,7 +771,9 @@ function initLogin(){
 }
 function selectUser(name){
   _loginTarget=USERS.find(u=>u.name===name);
-  if(name==='אופיר'){
+  if(!_loginTarget) return;
+  // כל המשתמשים — אם יש סיסמה שאל, אם אין (או ריק) — כנס ישירות
+  if(!_loginTarget.pass||_loginTarget.pass===''){
     sessionStorage.setItem('crm_user',JSON.stringify(_loginTarget));
     applyUser(_loginTarget);
     return;
@@ -759,15 +794,24 @@ function doLogin(){
 }
 function applyUser(u){
   if(!u||!u.name) return;
-  window._currentUser=u.name;window._currentColor=u.color;
+  window._currentUser=u.name;
+  window._currentColor=u.color;
+  window._currentRole=u.role||'tech';
   document.getElementById('login-screen').style.display='none';
   const b=document.getElementById('user-badge');
   if(b){b.textContent=u.name;b.style.background=u.color+'22';b.style.color=u.color;b.style.border='1px solid '+u.color+'44';}
-  const logBtn=document.getElementById('nb-log');
-  if(logBtn) logBtn.style.display=u.name==='רז'?'':'none';
+
+  const isAdmin=u.role==='admin';
+
+  // הסתר/הצג דפים לפי תפקיד
+  ['nb-debts','nb-log','nb-settings'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=isAdmin?'':'none';
+  });
   const logBtnD=document.getElementById('m-drawer-log');
   if(logBtnD) logBtnD.style.display=u.name==='רז'?'':'none';
-  // רשום כניסה רק אחרי שFirebase מוכן
+
+  // לוג כניסה — רק אחרי Firebase מוכן
   const isMobile=/iPhone|iPad|Android/.test(navigator.userAgent);
   setTimeout(()=>{
     try{addLog('other','כניסה למערכת',u.name+' — '+(isMobile?'📱 מובייל':'💻 מחשב'));}catch(e){}
@@ -790,13 +834,18 @@ function logout(){
 
 // ══ NAVIGATION ══
 function nav(page){
+  // הגבלת גישה לטכנאים
+  const adminOnly=['debts','settings','log'];
+  if(adminOnly.includes(page)&&window._currentRole&&window._currentRole!=='admin'){
+    toast('אין הרשאה לדף זה ❌','err');return;
+  }
   document.querySelectorAll('.pg').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.nav-btn,.mnb').forEach(e=>e.classList.remove('on'));
   const pg=document.getElementById('pg-'+page);if(!pg)return;
   pg.classList.add('on');
   const nb=document.getElementById('nb-'+page);if(nb)nb.classList.add('on');
   document.querySelectorAll('.mnb').forEach(b=>{if(b.getAttribute('onclick')==="nav('"+page+"')")b.classList.add('on');});
-  const R={dashboard:renderDash,customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,settings:loadSettings,notes:renderNotes,whatsapp:renderWhatsapp,archive:renderArchive,log:renderLog};
+  const R={dashboard:renderDash,customers:renderCusts,warranties:renderWarr,debts:renderDebts,faults:renderFaults,settings:loadSettings,notes:renderNotes,whatsapp:renderWhatsapp,archive:renderArchive,log:renderLog,reports:renderReports};
   if(R[page])R[page]();
 }
 function openM(id){document.getElementById(id).classList.add('open')}
@@ -1850,6 +1899,81 @@ async function clearLog(){
   window.logEntries=[];
   renderLog();
   toast('לוג נוקה ✅');
+}
+
+// ══ REPORTS ══
+function renderReports(){
+  // אתחול סינון חודש/שנה
+  const mSel=document.getElementById('rep-month');
+  const ySel=document.getElementById('rep-year');
+  if(!mSel||!ySel) return;
+  if(!mSel.options.length){
+    ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
+      .forEach((m,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=m;mSel.appendChild(o);});
+    const now=new Date();
+    mSel.value=now.getMonth()+1;
+    for(let y=2024;y<=now.getFullYear()+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;ySel.appendChild(o);}
+    ySel.value=now.getFullYear();
+  }
+  const month=parseInt(mSel.value);
+  const year=parseInt(ySel.value);
+  const prefix=`${year}-${String(month).padStart(2,'0')}`;
+
+  // משימות בחודש
+  const monthFaults=window.faults.filter(f=>(f.created||'').startsWith(prefix));
+  const doneFaults=monthFaults.filter(f=>f.status==='done');
+  const income=doneFaults.reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
+  const paidIncome=doneFaults.filter(f=>f.paid==='yes').reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
+
+  document.getElementById('cnt-reports').textContent=`${mSel.options[month-1]?.text} ${year}`;
+
+  document.getElementById('rep-stats').innerHTML=`
+    <div class="sc"><div class="sc-lbl">משימות החודש</div><div class="sc-val">${monthFaults.length}</div><div class="sc-sub">🔧 סה״כ</div></div>
+    <div class="sc"><div class="sc-lbl">טופלו</div><div class="sc-val">${doneFaults.length}</div><div class="sc-sub">✅ הושלמו</div></div>
+    <div class="sc"><div class="sc-lbl">הכנסות פוטנציאל</div><div class="sc-val">₪${income.toLocaleString('he-IL')}</div><div class="sc-sub">💰 כולל חובות</div></div>
+    <div class="sc"><div class="sc-lbl">גבוי בפועל</div><div class="sc-val" style="color:var(--grn)">₪${paidIncome.toLocaleString('he-IL')}</div><div class="sc-sub">✅ שולם</div></div>`;
+
+  // לפי טכנאי
+  const byTech={};
+  const incomeByTech={};
+  monthFaults.forEach(f=>{
+    const t=f.updatedBy||'לא ידוע';
+    byTech[t]=(byTech[t]||0)+1;
+    incomeByTech[t]=(incomeByTech[t]||0)+(f.status==='done'?parseFloat(f.amount)||0:0);
+  });
+
+  document.getElementById('rep-by-tech').innerHTML=Object.entries(byTech).sort((a,b)=>b[1]-a[1]).map(([name,cnt])=>{
+    const u=USERS.find(x=>x.name===name);
+    return`<div class="ai"><span style="color:${u?u.color:'var(--tx3)'};font-weight:700">${name}</span><span style="margin-right:auto;font-weight:700">${cnt} משימות</span></div>`;
+  }).join('')||'<div style="padding:20px;text-align:center;color:var(--tx3)">אין נתונים</div>';
+
+  document.getElementById('rep-income-tech').innerHTML=Object.entries(incomeByTech).sort((a,b)=>b[1]-a[1]).map(([name,amt])=>{
+    const u=USERS.find(x=>x.name===name);
+    return`<div class="ai"><span style="color:${u?u.color:'var(--tx3)'};font-weight:700">${name}</span><span style="margin-right:auto;font-weight:700;color:var(--grn)">₪${amt.toLocaleString('he-IL')}</span></div>`;
+  }).join('')||'<div style="padding:20px;text-align:center;color:var(--tx3)">אין נתונים</div>';
+
+  const open=monthFaults.filter(f=>f.status==='open').length;
+  const sched=monthFaults.filter(f=>f.status==='scheduled').length;
+  const done=doneFaults.length;
+  document.getElementById('rep-status').innerHTML=`
+    <div class="ai"><span>🔵 פתוחות</span><span style="margin-right:auto;font-weight:700">${open}</span></div>
+    <div class="ai"><span>📅 נקבע</span><span style="margin-right:auto;font-weight:700">${sched}</span></div>
+    <div class="ai"><span>✅ טופל</span><span style="margin-right:auto;font-weight:700">${done}</span></div>`;
+}
+
+function exportCustomersExcel(){
+  const rows=[['שם','טלפון','מייל','עיר','כתובת','פרויקט','ציוד','חוב','הערות']];
+  window.custs.forEach(c=>rows.push([
+    c.name||'',c.phone||'',c.email||'',c.city||'',c.address||'',
+    c.projectType||'',c.equipment||'',c.debt||0,c.techNotes||''
+  ]));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='לקוחות_וידאו_דיזיין_'+today()+'.csv';
+  a.click();
+  toast('קובץ יוצא ✅');
 }
 
 // ══ SETTINGS ══
