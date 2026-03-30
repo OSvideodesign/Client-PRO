@@ -447,6 +447,34 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
   </div>
 </div>
 
+
+<!-- ADMIN PANEL -->
+<div class="pg" id="pg-admin">
+  <div class="ph">
+    <div><div class="pt">🔐 ניהול מערכת</div><div class="ps">גישה מוגבלת — רז בלבד</div></div>
+  </div>
+
+  <!-- USERS TABLE -->
+  <div class="tw" style="margin-bottom:16px">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:700;font-size:14px">👥 ניהול משתמשים</div>
+      <button class="btn bp btn-sm" onclick="openNewUser()">+ משתמש חדש</button>
+    </div>
+    <div class="tscroll"><table>
+      <thead><tr><th>שם</th><th>סיסמה</th><th>צבע</th><th>הרשאות</th><th>סטטוס</th><th>פעולות</th></tr></thead>
+      <tbody id="admin-users-table"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ACCESS LOG -->
+  <div class="tw" style="margin-bottom:16px">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:700;font-size:14px">📋 לוג כניסות</div>
+      <button class="btn bs btn-sm" onclick="loadLog()">🔄 רענן</button>
+    </div>
+    <div id="admin-log" style="max-height:300px;overflow-y:auto"></div>
+  </div>
+</div>
 </main>
 
 <!-- CUSTOMER MODAL -->
@@ -644,11 +672,12 @@ window.cfg = {};
 let _eCust=null, _eFault=null;
 
 const USERS=[
-  {"name":"אופיר","pass":"ophir4123","color":"#3b82f6","role":"admin"},
-  {"name":"רז",  "pass":"Raz4123",  "color":"#f1f5f9","role":"admin"},
-  {"name":"גלאל","pass":"Jalal4123","color":"#10b981","role":"admin"},
-  {"name":"מוטי","pass":"Moti4123", "color":"#06b6d4","role":"admin"}
+  {"name":"אופיר","pass":"ophir4123","color":"#3b82f6","role":"admin","active":true,"pages":["dashboard","customers","faults","warranties","debts","settings"]},
+  {"name":"רז",  "pass":"Raz4123",  "color":"#6b8f3e","role":"superadmin","active":true,"pages":["dashboard","customers","faults","warranties","debts","settings","admin"]},
+  {"name":"גלאל","pass":"Jalal4123","color":"#10b981","role":"admin","active":true,"pages":["dashboard","customers","faults","warranties","debts","settings"]},
+  {"name":"מוטי","pass":"Moti4123", "color":"#06b6d4","role":"admin","active":true,"pages":["dashboard","customers","faults","warranties","debts","settings"]}
 ];
+window.USERS_INITIAL = USERS; // שמור לשימוש ב-Firebase
 window._currentUser=null;
 window._currentColor='#3b82f6';
 let _loginTarget=null;
@@ -685,14 +714,16 @@ function initLogin(){
   const saved=sessionStorage.getItem('crm_user');
   if(saved){try{applyUser(JSON.parse(saved));return;}catch(e){}}
   const btns=document.getElementById('user-btns');
-  btns.innerHTML=USERS.map(u=>
+  const loginUsers = (window._adminUsers || USERS).filter(u=>u.active!==false);
+  btns.innerHTML=loginUsers.map(u=>
     `<button onclick="selectUser('${u.name}')" style="background:${u.color}22;border:2px solid ${u.color};border-radius:10px;padding:14px 8px;cursor:pointer;font-family:Heebo,sans-serif;color:${u.color};font-weight:700;font-size:15px">
       <div style="font-size:24px;margin-bottom:4px">${u.name[0]}</div>${u.name}</button>`
   ).join('');
   document.getElementById('login-screen').style.display='flex';
 }
 function selectUser(name){
-  _loginTarget=USERS.find(u=>u.name===name);
+  const allUsers = window._adminUsers || USERS;
+  _loginTarget=allUsers.find(u=>u.name===name) || USERS.find(u=>u.name===name);
   // אופיר — כניסה ישירה ללא סיסמה
   if(name==='אופיר'){
     applyUser(_loginTarget);
@@ -707,11 +738,19 @@ function selectUser(name){
   setTimeout(()=>document.getElementById('pass-inp').focus(),100);
 }
 function doLogin(){
-  if(!_loginTarget||document.getElementById('pass-inp').value!==_loginTarget.pass){
+  const enteredPass = document.getElementById('pass-inp').value;
+  // Check against Firebase users first, then fallback to USERS
+  const allUsers = window._adminUsers || USERS;
+  const foundUser = allUsers.find(u => u.name === _loginTarget.name && u.pass === enteredPass);
+  if(!foundUser){
     document.getElementById('pass-err').style.display='block';return;
   }
-  applyUser(_loginTarget);
-  sessionStorage.setItem('crm_user',JSON.stringify(_loginTarget));
+  if(foundUser.active === false){
+    document.getElementById('pass-err').textContent='חשבון זה חסום ❌';
+    document.getElementById('pass-err').style.display='block';return;
+  }
+  applyUser(foundUser);
+  sessionStorage.setItem('crm_user',JSON.stringify(foundUser));
 }
 function applyUser(u){
   window._currentUser=u.name;window._currentColor=u.color;
@@ -2000,6 +2039,197 @@ function gcalFault(id){
   initLogin();
 })();
 
+
+// ══════════════════════════════════════════
+// ADMIN PANEL — רק לרז
+// ══════════════════════════════════════════
+let _editUserId = null;
+
+function isSuper(){
+  if(window._currentUser === 'רז') return true;
+  const users = window._adminUsers || USERS;
+  const u = users.find(x => x.name === window._currentUser);
+  return u && u.role === 'superadmin';
+}
+
+function showAdminNav(){
+  const nb = document.getElementById('nb-admin');
+  const mnb = document.getElementById('mnb-admin');
+  if(nb) nb.style.display = isSuper() ? '' : 'none';
+  if(mnb) mnb.style.display = isSuper() ? '' : 'none';
+}
+
+// Load users from Firestore or fallback to USERS array
+async function loadAdminUsers(){
+  const tbody = document.getElementById('admin-users-table');
+  if(!tbody) return;
+  const users = window._adminUsers || USERS;
+  const roleLabel = {admin:'👑 מנהל', tech:'🔧 טכנאי', readonly:'👁️ צפייה בלבד'};
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${u.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">${u.name[0]}</div>
+        <span style="font-weight:600">${u.name}</span>
+      </div></td>
+      <td><span style="font-family:monospace;background:var(--sur2);padding:2px 8px;border-radius:4px;font-size:12px">${u.pass}</span></td>
+      <td><div style="width:20px;height:20px;border-radius:50%;background:${u.color};border:2px solid var(--brd2)"></div></td>
+      <td><span class="badge bb">${roleLabel[u.role]||u.role}</span></td>
+      <td>${u.active===false?'<span class="badge br">חסום</span>':'<span class="badge bg">פעיל</span>'}</td>
+      <td><button class="btn bs btn-sm" onclick="editUserById('${u.name}')">✏️ ערוך</button></td>
+    </tr>
+  `).join('');
+}
+
+function openNewUser(){
+  _editUserId = null;
+  document.getElementById('M-user-title').textContent = 'משתמש חדש';
+  document.getElementById('mu-del').style.display = 'none';
+  document.getElementById('mu-name').value = '';
+  document.getElementById('mu-pass').value = '';
+  document.getElementById('mu-color').value = '#3b82f6';
+  document.getElementById('mu-role').value = 'admin';
+  document.getElementById('mu-active').checked = true;
+  // Check all pages
+  document.querySelectorAll('#mu-pages input[type=checkbox]').forEach(cb => cb.checked = true);
+  openM('M-user');
+}
+
+function editUserById(name){
+  const users = window._adminUsers || USERS;
+  const u = users.find(x => x.name === name);
+  if(!u) return;
+  _editUserId = name;
+  document.getElementById('M-user-title').textContent = 'עריכת משתמש — ' + name;
+  document.getElementById('mu-del').style.display = name === 'רז' ? 'none' : ''; // can't delete Raz
+  document.getElementById('mu-name').value = u.name;
+  document.getElementById('mu-pass').value = u.pass;
+  document.getElementById('mu-color').value = u.color || '#3b82f6';
+  document.getElementById('mu-role').value = u.role || 'admin';
+  document.getElementById('mu-active').checked = u.active !== false;
+  const pages = u.pages || ['dashboard','customers','faults','warranties','debts','settings'];
+  document.querySelectorAll('#mu-pages input[type=checkbox]').forEach(cb => {
+    cb.checked = pages.includes(cb.value);
+  });
+  openM('M-user');
+}
+
+async function saveUser(){
+  const name = document.getElementById('mu-name').value.trim();
+  const pass = document.getElementById('mu-pass').value.trim();
+  if(!name||!pass){ toast('שם וסיסמה חובה','err'); return; }
+
+  const pages = [];
+  document.querySelectorAll('#mu-pages input[type=checkbox]').forEach(cb => {
+    if(cb.checked) pages.push(cb.value);
+  });
+
+  const u = {
+    name, pass,
+    color: document.getElementById('mu-color').value,
+    role: document.getElementById('mu-role').value,
+    active: document.getElementById('mu-active').checked,
+    pages
+  };
+
+  // Save to Firebase
+  if(window._dbSaveUser) await window._dbSaveUser(u);
+
+  // Update local USERS array
+  const users = window._adminUsers || [...USERS];
+  const idx = users.findIndex(x => x.name === (_editUserId || name));
+  if(idx !== -1) users[idx] = u; else users.push(u);
+  window._adminUsers = users;
+
+  closeM('M-user');
+  loadAdminUsers();
+  toast(_editUserId ? 'משתמש עודכן ✅' : 'משתמש נוסף ✅');
+
+  // Log the action
+  logAction('שינוי משתמש: ' + name);
+}
+
+async function delUser(){
+  if(!_editUserId || _editUserId === 'רז') return;
+  if(!confirm('למחוק משתמש ' + _editUserId + '?')) return;
+  if(window._dbDelUser) await window._dbDelUser(_editUserId);
+  window._adminUsers = (window._adminUsers || USERS).filter(u => u.name !== _editUserId);
+  closeM('M-user');
+  loadAdminUsers();
+  toast('משתמש נמחק');
+  logAction('מחיקת משתמש: ' + _editUserId);
+}
+
+// ══ ACCESS LOG ══
+async function logAction(action){
+  if(!window._dbSaveLog) return;
+  await window._dbSaveLog({
+    id: uid(),
+    user: window._currentUser || 'לא ידוע',
+    action,
+    time: new Date().toISOString(),
+    device: navigator.userAgent.includes('Mobile') ? '📱 נייד' : '💻 מחשב'
+  });
+}
+
+async function loadLog(){
+  const el = document.getElementById('admin-log');
+  if(!el) return;
+  el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--tx3)">טוען...</div>';
+  if(!window._dbGetLogs){ el.innerHTML = '<div style="padding:16px;color:var(--tx3)">אין לוג זמין</div>'; return; }
+  const logs = await window._dbGetLogs();
+  if(!logs.length){ el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--tx3)">אין רשומות</div>'; return; }
+  el.innerHTML = logs.map(l => {
+    const d = new Date(l.time);
+    const timeStr = d.toLocaleDateString('he-IL') + ' ' + d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+    const users = window._adminUsers || USERS;
+    const u = users.find(x => x.name === l.user);
+    const color = u ? u.color : 'var(--tx2)';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--brd)">
+      <span style="font-size:18px">${l.device||'💻'}</span>
+      <div style="flex:1">
+        <span style="font-weight:700;color:${color}">${l.user}</span>
+        <span style="color:var(--tx2);font-size:13px"> — ${l.action}</span>
+      </div>
+      <span style="font-size:11px;color:var(--tx3);white-space:nowrap">${timeStr}</span>
+    </div>`;
+  }).join('');
+}
+
+// Hook into nav to log page views and enforce access restrictions
+const _origNav = nav;
+function nav(page){
+  // Check page access for current user
+  if(page !== 'admin' && page !== 'dashboard' && window._currentUser){
+    const users = window._adminUsers || USERS;
+    const u = users.find(x => x.name === window._currentUser);
+    if(u && u.pages && !u.pages.includes(page)){
+      toast('אין גישה לדף זה','err');
+      return;
+    }
+  }
+  // Admin only for Raz
+  if(page === 'admin' && !isSuper()){
+    toast('גישה מוגבלת','err');
+    return;
+  }
+  _origNav(page);
+  if(page === 'admin'){ loadAdminUsers(); loadLog(); }
+}
+
+// Override applyUser to show admin nav and log login
+const _origApplyUser = applyUser;
+function applyUser(u){
+  _origApplyUser(u);
+  showAdminNav();
+  logAction('כניסה למערכת');
+  // Load users from Firebase
+  if(window._dbGetUsers){
+    window._dbGetUsers().then(users=>{
+      if(users && users.length) window._adminUsers = users;
+    });
+  }
+}
+
 // ══ PWA + PUSH NOTIFICATIONS ══
 const VAPID_KEY = 'BERH6ce2DPqX2TbbnEhqqWmiOzhVuWbf5I7HOdfq_S8aKa3d_OgW3FCsta5GH_VzGk268EnRkcvryjt7jGAXhwM';
 
@@ -2109,6 +2339,24 @@ window._dbSaveNotif=async(notif)=>{
   try{
     await setDoc(doc(db,'notifications',notif.id),notif);
   }catch(e){console.error('saveNotif:',e);}
+};
+window._dbSaveUser=async(u)=>{
+  try{await setDoc(doc(db,'users',u.name),u);}catch(e){console.error('saveUser:',e);}
+};
+window._dbDelUser=async(name)=>{
+  try{await deleteDoc(doc(db,'users',name));}catch(e){console.error('delUser:',e);}
+};
+window._dbGetUsers=async()=>{
+  try{const s=await getDocs(collection(db,'users'));return s.docs.map(d=>d.data());}catch(e){return[];}
+};
+window._dbSaveLog=async(entry)=>{
+  try{await setDoc(doc(db,'access_log',entry.id),entry);}catch(e){console.error('saveLog:',e);}
+};
+window._dbGetLogs=async()=>{
+  try{
+    const s=await getDocs(collection(db,'access_log'));
+    return s.docs.map(d=>d.data()).sort((a,b)=>b.time.localeCompare(a.time)).slice(0,50);
+  }catch(e){return[];}
 };
 
 // FCM messaging setup inside module (has access to modular Firebase)
@@ -2261,5 +2509,58 @@ async function loadAll(){
 loadAll();
 
 </script>
+
+<!-- USER MODAL -->
+<div class="modal" id="M-user">
+  <div class="mbox">
+    <div class="mhd"><h2 id="M-user-title">משתמש חדש</h2><button class="btn bs btn-sm" onclick="closeM('M-user')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div><label class="flbl">שם משתמש *</label><input class="finp" id="mu-name" placeholder="שם"></div>
+        <div><label class="flbl">סיסמה *</label><input class="finp" id="mu-pass" type="text" placeholder="סיסמה"></div>
+        <div><label class="flbl">צבע</label>
+          <select class="finp" id="mu-color">
+            <option value="#3b82f6">🔵 כחול</option>
+            <option value="#10b981">🟢 ירוק</option>
+            <option value="#f59e0b">🟡 צהוב</option>
+            <option value="#06b6d4">🩵 טורקיז</option>
+            <option value="#8b5cf6">🟣 סגול</option>
+            <option value="#ef4444">🔴 אדום</option>
+            <option value="#fb923c">🟠 כתום</option>
+            <option value="#ec4899">🩷 ורוד</option>
+          </select>
+        </div>
+        <div><label class="flbl">תפקיד</label>
+          <select class="finp" id="mu-role">
+            <option value="admin">👑 מנהל — גישה מלאה</option>
+            <option value="tech">🔧 טכנאי — תקלות ולקוחות</option>
+            <option value="readonly">👁️ צפייה בלבד</option>
+          </select>
+        </div>
+        <div class="fg1"><label class="flbl">הגבלת גישה לדפים</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="mu-pages">
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="dashboard" checked> לוח בקרה</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="customers" checked> לקוחות</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="faults" checked> תקלות</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="warranties" checked> אחריות</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="debts" checked> חובות</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="settings" checked> הגדרות</label>
+          </div>
+        </div>
+        <div class="fg1">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="mu-active" checked>
+            <span>משתמש פעיל (מותר להתחבר)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn bd btn-sm" id="mu-del" style="display:none;margin-left:auto" onclick="delUser()">🗑️ מחק</button>
+      <button class="btn bs" onclick="closeM('M-user')">ביטול</button>
+      <button class="btn bp" onclick="saveUser()">💾 שמור</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
