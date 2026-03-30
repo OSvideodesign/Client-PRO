@@ -640,6 +640,9 @@ window.faults = [];
 window.cfg = {};
 let _eCust=null, _eFault=null;
 
+// ניקוי sessionStorage פגום בטעינה
+(function(){try{const s=sessionStorage.getItem('crm_user');if(s){const u=JSON.parse(s);if(!u||!u.name||!u.pass)sessionStorage.removeItem('crm_user');}}catch(e){sessionStorage.removeItem('crm_user');}})();
+
 const USERS=[
   {"name":"אופיר","pass":"ophir4123","color":"#3b82f6","role":"admin"},
   {"name":"רז",  "pass":"Raz4123",  "color":"#f1f5f9","role":"admin"},
@@ -679,11 +682,16 @@ function wStat(c){
 
 // ══ LOGIN ══
 function initLogin(){
+  // נקה sessionStorage פגום
   const saved=sessionStorage.getItem('crm_user');
   if(saved){
     try{
       const u=JSON.parse(saved);
-      if(u&&u.name&&u.pass){applyUser(u);return;}
+      if(u&&u.name&&u.pass&&USERS.find(x=>x.name===u.name&&x.pass===u.pass)){
+        applyUser(u);return;
+      } else {
+        sessionStorage.removeItem('crm_user');
+      }
     }catch(e){sessionStorage.removeItem('crm_user');}
   }
   const btns=document.getElementById('user-btns');
@@ -724,9 +732,11 @@ function applyUser(u){
   if(logBtn) logBtn.style.display=u.name==='רז'?'':'none';
   const logBtnD=document.getElementById('m-drawer-log');
   if(logBtnD) logBtnD.style.display=u.name==='רז'?'':'none';
-  // רשום כניסה בלוג
+  // רשום כניסה רק אחרי שFirebase מוכן
   const isMobile=/iPhone|iPad|Android/.test(navigator.userAgent);
-  addLog('other','כניסה למערכת',u.name+' — '+(isMobile?'📱 מובייל':'💻 מחשב'));
+  setTimeout(()=>{
+    try{addLog('other','כניסה למערכת',u.name+' — '+(isMobile?'📱 מובייל':'💻 מחשב'));}catch(e){}
+  },3000);
 }
 
 function openDrawer(){document.getElementById('m-drawer').classList.add('open');}
