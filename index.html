@@ -499,6 +499,12 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
         <div class="fg1"><label class="flbl">שם</label><input class="finp" id="u-name" placeholder="שם המשתמש"></div>
         <div><label class="flbl">סיסמה</label><input class="finp" id="u-pass" placeholder="סיסמה" type="text"></div>
         <div><label class="flbl">צבע</label><input class="finp" id="u-color" type="color" value="#3b82f6" style="height:42px;padding:4px"></div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:6px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--tx2)">
+            <input type="checkbox" id="u-nopass" onchange="document.getElementById('u-pass').disabled=this.checked;if(this.checked)document.getElementById('u-pass').value='';" style="width:16px;height:16px;cursor:pointer">
+            כניסה ללא סיסמה
+          </label>
+        </div>
         <div><label class="flbl">תפקיד</label>
           <select class="finp" id="u-role">
             <option value="admin">אדמין</option>
@@ -775,8 +781,8 @@ function initLogin(){
 function selectUser(name){
   _loginTarget=USERS.find(u=>u.name===name);
   if(!_loginTarget) return;
-  // אופיר בלבד — כניסה ישירה ללא סיסמה
-  if(name==='אופיר'){
+  // כניסה ללא סיסמה — אופיר תמיד, או כל משתמש שהוגדר ללא סיסמה
+  if(!_loginTarget.pass||_loginTarget.pass===''){
     sessionStorage.setItem('crm_user',JSON.stringify(_loginTarget));
     applyUser(_loginTarget);
     return;
@@ -2039,6 +2045,8 @@ function openAddUser(){
   document.getElementById('M-user-title').textContent='משתמש חדש';
   document.getElementById('u-name').value='';
   document.getElementById('u-pass').value='';
+  document.getElementById('u-pass').disabled=false;
+  document.getElementById('u-nopass').checked=false;
   document.getElementById('u-color').value='#3b82f6';
   document.getElementById('u-role').value='tech';
   document.getElementById('u-name').disabled=false;
@@ -2051,21 +2059,25 @@ function openEditUser(name){
   _editUserName=name;
   document.getElementById('M-user-title').textContent='עריכת '+name;
   document.getElementById('u-name').value=u.name;
-  document.getElementById('u-pass').value=u.pass;
+  document.getElementById('u-pass').value=u.pass||'';
+  const nopass=!u.pass||u.pass==='';
+  document.getElementById('u-nopass').checked=nopass;
+  document.getElementById('u-pass').disabled=nopass;
   document.getElementById('u-color').value=u.color;
   document.getElementById('u-role').value=u.role||'tech';
-  document.getElementById('u-name').disabled=true; // לא לשנות שם
-  document.getElementById('u-del-btn').style.display=name==='רז'?'none':''; // לא למחוק רז
+  document.getElementById('u-name').disabled=true;
+  document.getElementById('u-del-btn').style.display=name==='רז'?'none':'';
   openM('M-user');
 }
 
 function saveUser(){
   const name=_editUserName||document.getElementById('u-name').value.trim();
-  const pass=document.getElementById('u-pass').value.trim();
+  const nopass=document.getElementById('u-nopass').checked;
+  const pass=nopass?'':document.getElementById('u-pass').value.trim();
   const color=document.getElementById('u-color').value;
   const role=document.getElementById('u-role').value;
   if(!name){toast('חובה להכניס שם','err');return;}
-  if(!pass){toast('חובה להכניס סיסמה','err');return;}
+  if(!nopass&&!pass){toast('הכנס סיסמה או סמן "כניסה ללא סיסמה"','err');return;}
   if(_editUserName){
     // עדכון קיים
     const idx=USERS.findIndex(x=>x.name===_editUserName);
