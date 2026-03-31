@@ -512,6 +512,9 @@ tr:hover td{background:rgba(255,255,255,.02)}tr:last-child td{border-bottom:none
           </select>
         </div>
       </div>
+      <div class="stit" style="margin-top:16px">🔐 הרשאות גישה</div>
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:10px">1 = צפייה בלבד &nbsp;|&nbsp; 2 = צפייה + הוספה + עריכה &nbsp;|&nbsp; 3 = גישה מלאה (כולל מחיקה)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="u-perms-grid"></div>
     </div>
     <div class="mft">
       <button class="btn bd btn-sm" id="u-del-btn" onclick="deleteUser()">🗑️ מחק</button>
@@ -811,12 +814,18 @@ function applyUser(u){
   if(b){b.textContent=u.name;b.style.background=u.color+'22';b.style.color=u.color;b.style.border='1px solid '+u.color+'44';}
 
   const isAdmin=u.role==='admin';
+  const perms=getPerms(u);
 
-  // הסתר/הצג דפים לפי תפקיד — טכנאי לא רואה חובות ולוג בלבד
-  ['nb-debts','nb-log'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display=isAdmin?'':'none';
+  // הסתר/הצג דפים לפי הרשאות
+  const moduleToNav={customers:'nb-customers',faults:'nb-faults',archive:'nb-archive',
+    notes:'nb-notes',warranties:'nb-warranties',debts:'nb-debts',reports:'nb-reports'};
+  Object.entries(moduleToNav).forEach(([mod,nbId])=>{
+    const el=document.getElementById(nbId);
+    if(el) el.style.display=(perms[mod]||0)>=1?'':'none';
   });
+  // לוג רק לרז
+  const logEl=document.getElementById('nb-log');
+  if(logEl) logEl.style.display=u.name==='רז'?'':'none';
   const logBtnD=document.getElementById('m-drawer-log');
   if(logBtnD) logBtnD.style.display=u.name==='רז'?'':'none';
 
@@ -843,11 +852,13 @@ function logout(){
 
 // ══ NAVIGATION ══
 function nav(page){
-  // הגבלת גישה לטכנאים — חובות ולוג בלבד
-  const adminOnly=['debts','log'];
-  if(adminOnly.includes(page)&&window._currentRole&&window._currentRole!=='admin'){
+  // הגבלת גישה לפי הרשאות
+  const modMap={customers:'customers',faults:'faults',archive:'archive',notes:'notes',
+    warranties:'warranties',debts:'debts',reports:'reports',log:'log',settings:'settings'};
+  if(modMap[page]&&!['log','settings'].includes(page)&&!canDo(page,1)){
     toast('אין הרשאה לדף זה ❌','err');return;
   }
+  if(page==='log'&&window._currentUser!=='רז'){toast('אין הרשאה ❌','err');return;}
   document.querySelectorAll('.pg').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.nav-btn,.mnb').forEach(e=>e.classList.remove('on'));
   const pg=document.getElementById('pg-'+page);if(!pg)return;
@@ -1659,7 +1670,7 @@ function openNewNote(){
 function editNoteById(id){
   const n = window.notes.find(x=>x.id===id); if(!n) return;
   // Only owner can edit
-  if(n.owner && n.owner !== window._currentUser){ toast('רק '+n.owner+' יכול לערוך הערה זו','err'); return; }
+  // כולם יכולים לערוך הערות של כולם
   _eNote = id;
   document.getElementById('M-note-title').textContent = 'עריכת הערה';
   document.getElementById('mn-del').style.display = '';
@@ -2024,6 +2035,62 @@ function saveSettings(){
 }
 
 // ══ ניהול משתמשים ══
+const PERM_MODULES=[
+  {key:'customers',label:'👥 לקוחות'},
+  {key:'faults',label:'🔧 משימות'},
+  {key:'archive',label:'✅ ארכיון'},
+  {key:'notes',label:'📝 הערות'},
+  {key:'warranties',label:'🛡️ אחריות'},
+  {key:'debts',label:'💰 חובות'},
+  {key:'reports',label:'📈 דוחות'},
+];
+
+// ברירת מחדל: אדמין=3 (הכל), טכנאי=2 (ללא מחיקה), חובות/דוחות=0 לטכנאי
+const DEFAULT_PERMS={
+  admin:{customers:3,faults:3,archive:3,notes:3,warranties:3,debts:3,reports:3},
+  tech:{customers:2,faults:2,archive:2,notes:2,warranties:1,debts:0,reports:0}
+};
+
+function getPerms(u){
+  return u.perms || DEFAULT_PERMS[u.role||'tech'] || DEFAULT_PERMS.tech;
+}
+
+function canDo(module, level){
+  // level: 1=view, 2=edit/add, 3=delete
+  const u=USERS.find(x=>x.name===window._currentUser);
+  if(!u) return false;
+  const perms=getPerms(u);
+  return (perms[module]||0)>=level;
+}
+
+function renderPermsGrid(perms){
+  const grid=document.getElementById('u-perms-grid');
+  if(!grid) return;
+  grid.innerHTML=PERM_MODULES.map(m=>`
+    <div style="background:var(--sur2);border-radius:8px;padding:8px 10px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px">${m.label}</div>
+      <select class="finp perm-sel" data-key="${m.key}" style="font-size:12px;padding:5px 8px">
+        <option value="0">🚫 אין גישה</option>
+        <option value="1">👁️ צפייה בלבד</option>
+        <option value="2">✏️ צפייה + עריכה</option>
+        <option value="3">🔓 גישה מלאה</option>
+      </select>
+    </div>`).join('');
+  // הגדר ערכים
+  PERM_MODULES.forEach(m=>{
+    const sel=grid.querySelector(`[data-key="${m.key}"]`);
+    if(sel) sel.value=String(perms[m.key]||0);
+  });
+}
+
+function getPermsFromGrid(){
+  const perms={};
+  document.querySelectorAll('.perm-sel').forEach(sel=>{
+    perms[sel.dataset.key]=parseInt(sel.value);
+  });
+  return perms;
+}
+
 let _editUserName=null;
 
 function renderUsersList(){
@@ -2051,6 +2118,7 @@ function openAddUser(){
   document.getElementById('u-role').value='tech';
   document.getElementById('u-name').disabled=false;
   document.getElementById('u-del-btn').style.display='none';
+  renderPermsGrid(DEFAULT_PERMS.tech);
   openM('M-user');
 }
 
@@ -2067,6 +2135,7 @@ function openEditUser(name){
   document.getElementById('u-role').value=u.role||'tech';
   document.getElementById('u-name').disabled=true;
   document.getElementById('u-del-btn').style.display=name==='רז'?'none':'';
+  renderPermsGrid(getPerms(u));
   openM('M-user');
 }
 
@@ -2078,14 +2147,13 @@ function saveUser(){
   const role=document.getElementById('u-role').value;
   if(!name){toast('חובה להכניס שם','err');return;}
   if(!nopass&&!pass){toast('הכנס סיסמה או סמן "כניסה ללא סיסמה"','err');return;}
+  const perms=getPermsFromGrid();
   if(_editUserName){
-    // עדכון קיים
     const idx=USERS.findIndex(x=>x.name===_editUserName);
-    if(idx>=0){USERS[idx]={...USERS[idx],pass,color,role};}
+    if(idx>=0){USERS[idx]={...USERS[idx],pass,color,role,perms};}
   } else {
-    // חדש
     if(USERS.find(x=>x.name===name)){toast('משתמש עם שם זה כבר קיים','err');return;}
-    USERS.push({name,pass,color,role});
+    USERS.push({name,pass,color,role,perms});
   }
   // שמור ב-Firestore
   if(window._dbSaveCfg) window._dbSaveCfg({...window.cfg,users:USERS});
